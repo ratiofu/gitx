@@ -1,0 +1,25 @@
+# Task: Build gitx CLI Tool
+
+- [x] Requirements Gathering <!-- id: 0 -->
+  - [x] Research existing tools <!-- id: 1 -->
+  - [x] Interview user for detailed requirements <!-- id: 2 -->
+    - [x] Create clarifications.md <!-- id: 10 -->
+    - [x] Review user answers <!-- id: 11 -->
+- [ ] Planning <!-- id: 3 -->
+  - [x] Create implementation plan <!-- id: 4 -->
+  - [x] Create initial Gherkin specs (`requirements/`) <!-- id: 12 -->
+- [ ] Implementation <!-- id: 5 -->
+  - [x] Phase 1: Foundation <!-- id: 16 -->
+    - [x] Initialize project (pnpm, ts, vitest, biome) <!-- id: 6 -->
+    - [ ] Setup Test Infrastructure (Git Rig) <!-- id: 17 -->
+  - [ ] Phase 2: Core Logic (Pure) <!-- id: 18 -->
+    - [ ] Models & Types <!-- id: 19 -->
+    - [ ] Diff Parsing Logic <!-- id: 20 -->
+    - [ ] Operation Computation Logic <!-- id: 21 -->
+  - [ ] Phase 3: Shell & Command (Imperative) <!-- id: 22 -->
+    - [ ] Git Wrappers (`execa`) <!-- id: 23 -->
+    - [ ] TUI Wrappers (`@clack/prompts`) <!-- id: 24 -->
+    - [ ] Wire `split-branch` command <!-- id: 25 -->
+- [ ] Verification <!-- id: 8 -->
+  - [ ] Automated tests (Vitest + Gherkin) <!-- id: 15 -->
+  - [ ] Manual testing <!-- id: 9 -->

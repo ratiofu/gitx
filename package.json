@@ -1,0 +1,35 @@
+{
+  "name": "gitx",
+  "version": "1.0.0",
+  "description": "Extended Git Operations CLI",
+  "type": "module",
+  "bin": {
+    "gitx": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsup src/index.ts --format esm --clean --dts",
+    "test": "vitest run --passWithNoTests",
+    "lint": "biome check .",
+    "lint:fix": "biome check --fix .",
+    "reqcheck": "gherkin-lint requirements/",
+    "typecheck": "tsc --noEmit",
+    "quality": "./scripts/quality.sh"
+  },
+  "dependencies": {
+    "@clack/prompts": "catalog:",
+    "citty": "catalog:",
+    "execa": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@cucumber/cucumber": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "gherkin-lint": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
