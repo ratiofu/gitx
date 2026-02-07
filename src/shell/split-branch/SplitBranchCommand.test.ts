@@ -26,7 +26,9 @@ describe('split-branch command', () => {
   })
 
   // Helper to run the command with strict typing
-  const runCommand = async () => await new SplitBranchCommand({}).execute()
+  const runCommand = async (
+    options: { sourceBranch?: string; destinationBranch?: string } = {},
+  ) => await new SplitBranchCommand(options).execute()
 
   it('copies selected files to a new branch', async () => {
     process.chdir(rig.dir)
@@ -35,6 +37,7 @@ describe('split-branch command', () => {
     await rig.createCommit('keep.txt', 'keep')
 
     const file: GitFile = { path: 'file.txt', status: 'M' }
+    vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
     vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
     vi.mocked(prompts.promptDestinationBranch).mockResolvedValueOnce(
@@ -49,9 +52,51 @@ describe('split-branch command', () => {
     expect(await rig.getFileContent('file.txt')).toBe('modified')
   })
 
+  describe('source branch selection', () => {
+    it('prompts for source branch if not provided', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('file.txt', 'content')
+      await rig.modifyFile('file.txt', 'modified')
+
+      vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
+      vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([]) // Exit early
+
+      await runCommand()
+
+      expect(prompts.promptSourceBranch).toHaveBeenCalled()
+    })
+
+    it('skips prompt if source branch is provided', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('file.txt', 'content')
+      await rig.modifyFile('file.txt', 'modified')
+
+      vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([]) // Exit early
+
+      await runCommand({ sourceBranch: 'main' })
+
+      expect(prompts.promptSourceBranch).not.toHaveBeenCalled()
+    })
+
+    it('validates source branch existence', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('file.txt', 'content')
+      await rig.modifyFile('file.txt', 'modified')
+
+      // Attempt to use non-existent branch
+      await runCommand({ sourceBranch: 'non-existent' })
+
+      expect(tui.showOutro).toHaveBeenCalledWith(
+        expect.stringContaining("Source branch 'non-existent' does not exist"),
+      )
+    })
+  })
+
   it('exits if no modified files found', async () => {
     process.chdir(rig.dir)
     await rig.createCommit('file.txt', 'content')
+
+    vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
 
     await runCommand()
 
@@ -66,6 +111,7 @@ describe('split-branch command', () => {
     await rig.createCommit('file.txt', 'content')
     await rig.modifyFile('file.txt', 'modified')
 
+    vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([])
 
     await runCommand()
@@ -80,7 +126,7 @@ describe('split-branch command', () => {
 
     const file: GitFile = { path: 'file.txt', status: 'M' }
     const other: GitFile = { path: 'other.txt', status: 'M' }
-
+    vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
     vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([other])
     vi.mocked(prompts.promptDestinationBranch).mockResolvedValueOnce(
@@ -102,6 +148,7 @@ describe('split-branch command', () => {
     await rig.modifyFile('file.txt', 'modified')
 
     const file: GitFile = { path: 'file.txt', status: 'M' }
+    vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
     vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
     vi.mocked(prompts.promptDestinationBranch).mockResolvedValueOnce(
@@ -120,6 +167,7 @@ describe('split-branch command', () => {
     await rig.modifyFile('file.txt', 'modified')
 
     const file: GitFile = { path: 'file.txt', status: 'M' }
+    vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
 
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
     vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([file])
@@ -139,6 +187,7 @@ describe('split-branch command', () => {
     await rig.checkout('main')
 
     const file: GitFile = { path: 'file.txt', status: 'M' }
+    vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
     vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
     vi.mocked(prompts.promptDestinationBranch).mockResolvedValueOnce(
@@ -162,6 +211,7 @@ describe('split-branch command', () => {
 
     // Mock promptFilesToCopy to return only file.txt
     const file: GitFile = { path: 'file.txt', status: 'M' }
+    vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('main')
 
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
     vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])

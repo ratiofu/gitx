@@ -37,6 +37,23 @@ export async function promptFilesToRemove(
   return filesToCopy.filter((f) => filesToRemovePaths.includes(f.path))
 }
 
+export async function promptSourceBranch(
+  branches: readonly Branch[],
+  currentBranch: string,
+): Promise<string> {
+  const options = branches.map((b) => ({
+    value: b.name,
+    label: b.name,
+  }))
+
+  const branchChoice = await selectOption(
+    'Source branch:',
+    options,
+    currentBranch,
+  )
+  return branchChoice
+}
+
 export async function promptDestinationBranch(
   branches: readonly Branch[],
 ): Promise<string> {

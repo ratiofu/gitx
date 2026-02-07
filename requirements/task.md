@@ -16,7 +16,7 @@
  14. [x] Git Wrappers (`execa`) <!-- id: 23 -->
  15. [x] TUI Wrappers (`@clack/prompts`) <!-- id: 24 -->
  16. [x] Implement CLI Arguments (`--source`, `--destination`) <!-- id: 26 -->
- 17. [ ] Implement Source Branch selection logic <!-- id: 27 -->
+ 17. [x] Implement Source Branch selection logic <!-- id: 27 -->
  18. [ ] Finish wiring up all logic for the `split-branch` command <!-- id: 25 -->
  19. [ ] Support splitting committed files (curr: worktree only) <!-- id: 28 -->
  20. [ ] Fix Source/Dest Assumption: Default to Current = Destination <!-- id: 29 -->

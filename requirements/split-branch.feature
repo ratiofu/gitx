@@ -48,14 +48,19 @@ Feature: Split Branch
     Then the branch "non-existent-branch" exists
     And the branch "non-existent-branch" is created from "feature-a"
 
-  Scenario: Default branch selection (Interactive)
+  Scenario: Source Branch Selection (Interactive)
     Given I am on branch "feature-a"
-    And I have branches "feature-b", "feature-c", "main"
-    And "feature-c" has the most recent commit
+    And I have branches "feature-b", "main"
     When I run "gitx split-branch"
-    And I select "feature-c" from the source branch prompt (ordered by: "feature-c", "feature-b", "main", "feature-a")
+    And I am prompted to select a source branch
+    And the default source branch is "feature-a"
+    And I select "feature-a" as the source branch
     Then I am prompted to select a destination branch
-    And the default destination branch is "feature-a"
+
+  Scenario: Source Branch Validation (Error)
+    Given I am on branch "feature-a"
+    When I run "gitx split-branch --source non-existent-branch"
+    Then the command fails with error "Source branch 'non-existent-branch' does not exist."
 
   Scenario: File Selection UI (Tree View)
     Given I am on branch "feature-a"

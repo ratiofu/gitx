@@ -12,6 +12,7 @@ import {
   promptDestinationBranch,
   promptFilesToCopy,
   promptFilesToRemove,
+  promptSourceBranch,
   showPlan,
 } from './prompts.js'
 
@@ -21,14 +22,9 @@ export interface SplitBranchCommandOptions {
 }
 
 export class SplitBranchCommand {
-  // TODO: this naming an the usage do not make sense.
-  // Branch selection/confirmation needs to be its own op in the list of ops below
-  // 1. we may be getting source and target branch injected as options
-  // 2. those passed options should be validated and if either of the branches don't exist, exit with an error
-  // 3. if no existing destination branch is specified, the user is presented with a choice to select any local branch, with the `<current branch>` highlighted as the default (arrow select, enter confirm)
-  // 4. if no existing source branch is specified, the user is presented with a choice to select any local branch; if the destination branch is not `<current branch>`, the make this the default option
   #currentBranch = ''
-  #branchChoice = ''
+  #destinationBranch = ''
+  #sourceBranch = ''
   #files: readonly GitFile[] = emptyArray()
   #branches: readonly Branch[] = emptyArray()
   #filesToCopy: readonly GitFile[] = emptyArray()
@@ -44,8 +40,10 @@ export class SplitBranchCommand {
 
   public async execute() {
     const ops = [
-      this.loadContext,
-      this.promptUser,
+      this.readRepoState,
+      this.determineSource,
+      this.determineDestination,
+      this.selectFiles,
       this.computeLogic,
       this.executeOperations,
     ] as const
@@ -59,31 +57,12 @@ export class SplitBranchCommand {
     }
   }
 
-  private async loadContext(): Promise<boolean> {
+  private async readRepoState(): Promise<boolean> {
     this.#spinner.start('Reading repository status')
     const context = await getAppContext()
     this.#currentBranch = context.currentBranch
     const files = context.files
     this.#branches = context.branches
-
-    const splitContext = resolveSplitContext(
-      {
-        source: this.#options.sourceBranch,
-        destination: this.#options.destinationBranch,
-      },
-      this.#currentBranch,
-    )
-
-    // TODO: Handle source != current (Task 19)
-    if (!splitContext.currentBranchIsSource) {
-      // For now, we just warn or log? Or maybe we can't do anything yet.
-      // Leaving files as is (worktree) which is technically wrong if we wanted another branch.
-    }
-
-    // Set destination if resolved (e.g. defaulting to current when source is other)
-    if (splitContext.destinationBranch) {
-      this.#branchChoice = splitContext.destinationBranch
-    }
 
     if (files.length === 0) {
       showOutro('No modified files found. Nothing to split.')
@@ -95,7 +74,61 @@ export class SplitBranchCommand {
     }
   }
 
-  private async promptUser(): Promise<boolean> {
+  private async determineSource(): Promise<boolean> {
+    // 1. If source provided, validate it
+    if (this.#options.sourceBranch) {
+      const exists = this.#branches.some(
+        (b) => b.name === this.#options.sourceBranch,
+      )
+      if (!exists) {
+        showOutro(
+          `Source branch '${this.#options.sourceBranch}' does not exist.`,
+        )
+        return false
+      }
+      this.#sourceBranch = this.#options.sourceBranch
+    } else {
+      // 2. If not provided, prompt user (Default to current)
+      // TODO: In non-interactive mode, this should default to current without prompt?
+      // For now, consistent with requirements, we prompt.
+      // But we can skip prompt if we are already in a "default" mode?
+      // The requirement says "if no existing source branch is specified, the user is presented with a choice".
+      // We'll prompt.
+      this.#sourceBranch = await promptSourceBranch(
+        this.#branches,
+        this.#currentBranch,
+      )
+    }
+
+    // TODO: Handle source != current (Task 19)
+    // If source is not current, we might need to checkout or fetch files from that branch.
+    // Currently getAppContext reads worktree of CURRENT branch.
+    // So if source != current, this.#files is wrong?
+    // We will defer this fix to Task 19.
+
+    return true
+  }
+
+  private async determineDestination(): Promise<boolean> {
+    // Resolve context based on determined source and options
+    const splitContext = resolveSplitContext(
+      {
+        source: this.#sourceBranch,
+        destination: this.#options.destinationBranch,
+      },
+      this.#currentBranch,
+    )
+
+    if (splitContext.destinationBranch) {
+      this.#destinationBranch = splitContext.destinationBranch
+    } else {
+      // Prompt if not resolved
+      this.#destinationBranch = await promptDestinationBranch(this.#branches)
+    }
+    return true
+  }
+
+  private async selectFiles(): Promise<boolean> {
     const filesToCopy = await promptFilesToCopy(this.#files)
 
     if (filesToCopy.length === 0) {
@@ -104,10 +137,6 @@ export class SplitBranchCommand {
     }
     this.#filesToCopy = filesToCopy
     this.#filesToRemove = await promptFilesToRemove(filesToCopy)
-
-    if (!this.#branchChoice) {
-      this.#branchChoice = await promptDestinationBranch(this.#branches)
-    }
     return true
   }
 
@@ -116,8 +145,8 @@ export class SplitBranchCommand {
       this.#filesToCopy,
       this.#filesToRemove,
       {
-        sourceBranch: this.#currentBranch,
-        newBranch: this.#branchChoice,
+        sourceBranch: this.#sourceBranch,
+        newBranch: this.#destinationBranch,
       },
     )
     this.#operations = operations
@@ -126,7 +155,7 @@ export class SplitBranchCommand {
       showNote(warnings.join('\n'), 'Warnings')
     }
 
-    showPlan(this.#currentBranch, this.#branchChoice, this.#operations)
+    showPlan(this.#sourceBranch, this.#destinationBranch, this.#operations)
 
     const confirmed = await confirmExecution()
     if (confirmed) {
@@ -140,11 +169,11 @@ export class SplitBranchCommand {
   private async executeOperations(): Promise<boolean> {
     this.#spinner.start('Executing operations...')
     const isNewBranch = !this.#branches.some(
-      (b) => b.name === this.#branchChoice,
+      (b) => b.name === this.#destinationBranch,
     )
 
     await executeSplit(
-      this.#branchChoice,
+      this.#destinationBranch,
       isNewBranch,
       this.#files,
       this.#filesToCopy,
@@ -154,7 +183,7 @@ export class SplitBranchCommand {
     this.#spinner.stop('Done!')
     if (isNewBranch) {
       showOutro(
-        `Switched to branch ${this.#branchChoice} with selected changes.`,
+        `Switched to branch ${this.#destinationBranch} with selected changes.`,
       )
     } else {
       showOutro('Copied files are unstaged in the current branch')

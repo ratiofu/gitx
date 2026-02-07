@@ -31,10 +31,12 @@ export function handleCancel(value: unknown) {
 export async function selectOption<T extends string>(
   message: string,
   options: Option<T>[],
+  initialValue?: T,
 ): Promise<T> {
   const result = await select({
     message,
     options,
+    initialValue,
   })
   handleCancel(result)
   return result as T
