@@ -30,7 +30,7 @@ export async function promptFilesToRemove(
   filesToCopy: readonly GitFile[],
 ): Promise<readonly GitFile[]> {
   const filesToRemovePaths = await multiSelect(
-    'Select files to DELETE from the source branch (revert changes):',
+    'Select files to DELETE from the source branch:',
     filesToCopy.map((f) => ({
       value: f.path,
       label: `${f.status}  ${f.path}`,
