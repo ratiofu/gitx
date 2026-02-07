@@ -55,8 +55,12 @@ Behavior requirements in `requirements/split-branch.feature`.
 3.a **Git Wrappers**: Implement `src/shell/git.ts` using `execa` to run arbitrary git commands.
 3.b **TUI Wrappers**: Implement `src/shell/tui.ts` using `@clack/prompts` to ask for branch names and file selections.
 3.c **Command wiring**: Implement `src/shell/commands/split-branch/index.ts`.
-    - Connect TUI to specific Git Wrappers.
-    - Wire up the Core Logic to transform data.
+    - **CLI Arguments**: Parse `--source` (`-s`) and `--destination` (`-d`) flags.
+    - **Context Loading**:
+        - Default `source` = current branch (if splitting worktree).
+        - Support `source` != current branch (splitting committed files from another branch).
+        - If `source` is another branch, use `git diff --name-status destination...source` to find candidates.
+    - **Wire up Core Logic**: Connect TUI, Arguments, and Core Logic.
 
 ### Phase 4: Verification
 

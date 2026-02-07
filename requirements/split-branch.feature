@@ -11,6 +11,7 @@ Feature: Split Branch
     Given I am on branch "feature-a"
     And I have committed "feature-file.txt"
     When I run "gitx split-branch --destination feature-b"
+    And I select "feature-a" as the source branch
     And I select "feature-file.txt" to copy
     Then a branch "feature-b" exists
     And the branch "feature-b" contains "feature-file.txt"
