@@ -2,28 +2,19 @@ import * as clack from '@clack/prompts'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as tui from './tui.js'
 
+type Clack = typeof import('@clack/prompts')
+
 // Mock entire clack module
-vi.mock('@clack/prompts', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@clack/prompts')>()
-  return {
-    ...actual,
-    isCancel: vi.fn(),
-    cancel: vi.fn(),
-    text: vi.fn(),
-    select: vi.fn(),
-    multiselect: vi.fn(),
-    confirm: vi.fn(),
-    group: vi.fn(),
-    note: vi.fn(),
-  }
-})
+vi.mock('@clack/prompts', async () =>
+  (await import('vitest-mock-extended')).mockDeep<Clack>(),
+)
 
 describe('TUI Wrappers', () => {
   beforeEach(() => {
     // Mock process.exit
-    vi.spyOn(process, 'exit').mockImplementation((() => {}) as unknown as (
-      code?: unknown,
-    ) => never)
+    vi.spyOn(process, 'exit').mockImplementation(
+      () => ({}) as unknown as never,
+    )
   })
 
   afterEach(() => {

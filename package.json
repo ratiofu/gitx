@@ -19,17 +19,18 @@
   "dependencies": {
     "@clack/prompts": "catalog:",
     "citty": "catalog:",
-    "execa": "catalog:"
+    "execa": "catalog:",
+    "picocolors": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@cucumber/cucumber": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "gherkin-lint": "catalog:",
     "tsup": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "vitest-mock-extended": "catalog:"
   }
 }

@@ -6,9 +6,11 @@ import {
   multiselect,
   note,
   type Option,
+  outro,
   type PromptGroup,
   type PromptGroupOptions,
   select,
+  spinner,
   text,
 } from '@clack/prompts'
 
@@ -128,4 +130,14 @@ export const p = {
   confirm,
   cancel,
   isCancel,
+  outro,
+  spinner,
+}
+
+export function showOutro(message: string) {
+  outro(message)
+}
+
+export function createSpinner() {
+  return spinner()
 }
