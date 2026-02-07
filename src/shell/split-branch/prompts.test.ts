@@ -30,7 +30,7 @@ describe('prompts', () => {
       expect(result).toHaveLength(1)
       expect(result[0].path).toBe('file1.txt')
       expect(tui.multiSelect).toHaveBeenCalledWith(
-        expect.stringContaining('Select files to MOVE'),
+        expect.stringContaining('Select files to COPY'),
         expect.any(Array),
       )
     })
@@ -50,7 +50,7 @@ describe('prompts', () => {
       expect(result).toHaveLength(1)
       expect(result[0].path).toBe('file2.txt')
       expect(tui.multiSelect).toHaveBeenCalledWith(
-        expect.stringContaining('Select files to REMOVE'),
+        expect.stringContaining('Select files to DELETE'),
         expect.any(Array),
       )
     })

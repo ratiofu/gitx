@@ -1,4 +1,7 @@
-import { dim, green } from 'picocolors'
+import pc from 'picocolors'
+
+const { dim, green } = pc
+
 import type { Branch, GitFile, SplitOperation } from '../../core/models.js'
 import {
   askText,
@@ -13,7 +16,7 @@ export async function promptFilesToCopy(
   files: readonly GitFile[],
 ): Promise<readonly GitFile[]> {
   const filesToCopyPaths = await multiSelect(
-    'Select files to MOVE to the new branch:',
+    'Select files to COPY to the new branch:',
     files.map((f) => ({
       value: f.path,
       label: `${f.status}  ${f.path}`,
@@ -27,7 +30,7 @@ export async function promptFilesToRemove(
   filesToCopy: readonly GitFile[],
 ): Promise<readonly GitFile[]> {
   const filesToRemovePaths = await multiSelect(
-    'Select files to REMOVE from the source branch (revert changes):',
+    'Select files to DELETE from the source branch (revert changes):',
     filesToCopy.map((f) => ({
       value: f.path,
       label: `${f.status}  ${f.path}`,

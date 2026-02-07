@@ -1,6 +1,9 @@
 import { outro } from '@clack/prompts'
 import { defineCommand } from 'citty'
-import { red } from 'picocolors'
+import pc from 'picocolors'
+
+const { red } = pc
+
 import { exitProcessWithCode } from '../../base/process.js'
 import { SplitBranchCommand } from './SplitBranchCommand.js'
 
