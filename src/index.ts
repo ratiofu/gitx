@@ -1,6 +1,9 @@
 import { defineCommand, runMain } from 'citty'
 import pkg from '../package.json' with { type: 'json' }
-import { splitBranchCommand } from './shell/split-branch/index.js'
+import {
+  sbCommandAlias,
+  splitBranchCommand,
+} from './shell/split-branch/index.js'
 
 const main = defineCommand({
   meta: {
@@ -10,6 +13,7 @@ const main = defineCommand({
   },
   subCommands: {
     'split-branch': splitBranchCommand,
+    sb: sbCommandAlias,
   },
 })
 
