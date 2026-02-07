@@ -1,7 +1,3 @@
-# temporarily ignore src
-src/
-src.zip
-
 !.env.example
 .cache
 .cache/

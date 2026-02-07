@@ -11,7 +11,7 @@
 - [ ] Implementation <!-- id: 5 -->
   - [x] Phase 1: Foundation <!-- id: 16 -->
     - [x] Initialize project (pnpm, ts, vitest, biome) <!-- id: 6 -->
-    - [ ] Setup Test Infrastructure (Git Rig) <!-- id: 17 -->
+    - [x] Setup Test Infrastructure (Git Rig) <!-- id: 17 -->
   - [ ] Phase 2: Core Logic (Pure) <!-- id: 18 -->
     - [ ] Models & Types <!-- id: 19 -->
     - [ ] Diff Parsing Logic <!-- id: 20 -->

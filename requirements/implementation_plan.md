@@ -25,8 +25,8 @@ src/
 │   └── commands/      # Citty command definitions
 │       └── split-branch/
 │           ├── index.ts
-│           └── index.test.ts # Integration tests (Gherkin runner)
-├── requirements/      # Gherkin .feature files (Symlinked or copied from root)
+│           └── index.test.ts # Integration tests (Vitest + GitTestRig)
+├── requirements/      # Gherkin .feature files (Specs only)
 ├── index.ts           # Entry point
 └── ...
 ```
@@ -42,7 +42,7 @@ Behavior requirements in `requirements/split-branch.feature`.
 1.a **Project Initialization**: ✅ Complete
 1.b **Test Infrastructure**:
     - Setup Vitest.
-    - Create a "Git Test Rig" helper in `src/test/git-rig.ts` that allows creating temp repos, making commits, and switching branches programmatically for tests.
+    - Create a "Git Test Rig" helper in `src/test/git-test-rig.ts` that allows creating temp repos, making commits, and switching branches programmatically for tests.
 
 ### Phase 2: Core Logic (Pure)
 
@@ -60,7 +60,7 @@ Behavior requirements in `requirements/split-branch.feature`.
 
 ### Phase 4: Verification
 
-4.a **Integration Tests**: Write `src/shell/commands/split-branch/index.test.ts` that parses `requirements/split-branch.feature` and runs them against the `Git Test Rig`.
+4.a **Integration Tests**: Write `src/shell/commands/split-branch/index.test.ts` that implements the scenarios from `requirements/split-branch.feature` as standard Vitest tests using `GitTestRig`.
 
 ## Verification Plan
 
