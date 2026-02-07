@@ -1,8 +1,9 @@
+import { readOnly } from '../base/read-only.js'
 import type { GitFile, SplitOperation, SplitOptions } from './models.js'
 
 export interface SplitResult {
-  operations: SplitOperation[]
-  warnings: string[]
+  readonly operations: readonly SplitOperation[]
+  readonly warnings: readonly string[]
 }
 
 /**
@@ -13,8 +14,8 @@ export interface SplitResult {
  * @param options - Context (branches)
  */
 export function computeSplitOperations(
-  filesToCopy: GitFile[],
-  filesToRemove: GitFile[],
+  filesToCopy: readonly GitFile[],
+  filesToRemove: readonly GitFile[],
   options: SplitOptions,
 ): SplitResult {
   const operations: SplitOperation[] = []
@@ -22,12 +23,14 @@ export function computeSplitOperations(
 
   // 1. Copy operations
   for (const file of filesToCopy) {
-    operations.push({
-      type: 'copy',
-      file,
-      sourceBranch: options.sourceBranch,
-      destinationBranch: options.newBranch,
-    })
+    operations.push(
+      readOnly({
+        type: 'copy',
+        file,
+        sourceBranch: options.sourceBranch,
+        destinationBranch: options.newBranch,
+      }),
+    )
   }
 
   // 2. Remove operations
@@ -43,13 +46,15 @@ export function computeSplitOperations(
       continue
     }
 
-    operations.push({
-      type: 'remove-source',
-      file,
-      sourceBranch: options.sourceBranch,
-      destinationBranch: options.newBranch,
-    })
+    operations.push(
+      readOnly({
+        type: 'remove-source',
+        file,
+        sourceBranch: options.sourceBranch,
+        destinationBranch: options.newBranch,
+      }),
+    )
   }
 
-  return { operations, warnings }
+  return readOnly({ operations, warnings })
 }

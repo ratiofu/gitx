@@ -18,7 +18,7 @@
     - [x] Models & Types <!-- id: 19 -->
     - [x] Diff Parsing Logic <!-- id: 20 -->
     - [x] Operation Computation Logic (Invariant: Copy-before-delete) <!-- id: 21 -->
-  - [ ] Phase 3: Shell & Command (Imperative) <!-- id: 22 -->
+  - [/] Phase 3: Shell & Command (Imperative) <!-- id: 22 -->
     - [ ] Git Wrappers (`execa`) <!-- id: 23 -->
     - [ ] TUI Wrappers (`@clack/prompts`) <!-- id: 24 -->
     - [ ] Wire `split-branch` command <!-- id: 25 -->

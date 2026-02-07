@@ -9,28 +9,28 @@ export type GitStatus =
   | ' ' // Unmodified or ignored
 
 export interface GitFile {
-  path: string
-  status: GitStatus
-  originalPath?: string // For renames
+  readonly path: string
+  readonly status: GitStatus
+  readonly originalPath?: string // For renames
 }
 
 export interface Branch {
-  name: string
-  isCurrent: boolean
-  sha?: string
-  lastCommitDate?: Date
+  readonly name: string
+  readonly isCurrent: boolean
+  readonly sha?: string
+  readonly lastCommitDate?: Date
 }
 
 export type OperationType = 'copy' | 'remove-source'
 
 export interface SplitOperation {
-  type: OperationType
-  file: GitFile
-  destinationBranch: string
-  sourceBranch: string
+  readonly type: OperationType
+  readonly file: GitFile
+  readonly destinationBranch: string
+  readonly sourceBranch: string
 }
 
 export interface SplitOptions {
-  newBranch: string
-  sourceBranch: string
+  readonly newBranch: string
+  readonly sourceBranch: string
 }
