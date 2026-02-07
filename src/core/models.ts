@@ -34,3 +34,9 @@ export interface SplitOptions {
   readonly newBranch: string
   readonly sourceBranch: string
 }
+
+export interface SplitContext {
+  readonly sourceBranch: string
+  readonly destinationBranch: string
+  readonly currentBranchIsSource: boolean
+}

@@ -1,5 +1,5 @@
 import * as clackPrompts from '@clack/prompts'
-import type { CommandContext } from 'citty'
+import type { CommandContext, ParsedArgs } from 'citty'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
 import * as processHelper from '../../base/process.js'
@@ -31,14 +31,32 @@ describe('splitBranchCommand entry point', () => {
   beforeEach(vi.clearAllMocks)
   afterEach(vi.restoreAllMocks)
 
-  const runCommand = async () => {
+  // Extract the non-resolvable ArgsDef from the command definition
+  type ArgsResolvable = NonNullable<(typeof splitBranchCommand)['args']>
+  type ArgsDef = Extract<ArgsResolvable, Record<string, unknown>>
+  type Parsed = ParsedArgs<ArgsDef>
+
+  const runCommand = async (
+    inputArgs: { source?: string; destination?: string } = {},
+  ) => {
     if (!splitBranchCommand.run) {
       throw new Error('Command run method is undefined')
     }
-    await splitBranchCommand.run(mock<CommandContext>())
+
+    const ctx = mock<CommandContext<ArgsDef>>()
+
+    ctx.args = {
+      _: [],
+      source: inputArgs.source,
+      s: inputArgs.source,
+      destination: inputArgs.destination,
+      d: inputArgs.destination,
+    } as Parsed
+
+    await splitBranchCommand.run(ctx)
   }
 
-  it('executes SplitBranchCommand successfully', async () => {
+  it('executes SplitBranchCommand successfully with defaults', async () => {
     const mockExecute = await mockCommand()
 
     await runCommand()
@@ -46,6 +64,18 @@ describe('splitBranchCommand entry point', () => {
     expect(SplitBranchCommand).toHaveBeenCalledWith({})
     expect(mockExecute).toHaveBeenCalled()
     expect(processHelper.exitProcessWithCode).not.toHaveBeenCalled()
+  })
+
+  it('executes SplitBranchCommand with provided args', async () => {
+    const mockExecute = await mockCommand()
+
+    await runCommand({ source: 'source-branch', destination: 'dest-branch' })
+
+    expect(SplitBranchCommand).toHaveBeenCalledWith({
+      sourceBranch: 'source-branch',
+      destinationBranch: 'dest-branch',
+    })
+    expect(mockExecute).toHaveBeenCalled()
   })
 
   it('handles Error instances and exits with code 1', async () => {

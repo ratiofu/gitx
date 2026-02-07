@@ -1,5 +1,8 @@
 import { emptyArray } from '../../base/empty.js'
-import { computeSplitOperations } from '../../core/logic.js'
+import {
+  computeSplitOperations,
+  resolveSplitContext,
+} from '../../core/logic.js'
 import type { Branch, GitFile, SplitOperation } from '../../core/models.js'
 import { createSpinner, showNote, showOutro } from '../tui.js'
 import { getAppContext } from './context.js'
@@ -12,24 +15,31 @@ import {
   showPlan,
 } from './prompts.js'
 
-// this is temporary until we figure out CLI arg parsing
 export interface SplitBranchCommandOptions {
-  readonly targetDir?: string
-  readonly sourceDir?: string
+  readonly sourceBranch?: string
+  readonly destinationBranch?: string
 }
 
 export class SplitBranchCommand {
+  // TODO: this naming an the usage do not make sense.
+  // Branch selection/confirmation needs to be its own op in the list of ops below
+  // 1. we may be getting source and target branch injected as options
+  // 2. those passed options should be validated and if either of the branches don't exist, exit with an error
+  // 3. if no existing destination branch is specified, the user is presented with a choice to select any local branch, with the `<current branch>` highlighted as the default (arrow select, enter confirm)
+  // 4. if no existing source branch is specified, the user is presented with a choice to select any local branch; if the destination branch is not `<current branch>`, the make this the default option
   #currentBranch = ''
+  #branchChoice = ''
   #files: readonly GitFile[] = emptyArray()
   #branches: readonly Branch[] = emptyArray()
   #filesToCopy: readonly GitFile[] = emptyArray()
   #filesToRemove: readonly GitFile[] = emptyArray()
-  #branchChoice = ''
   #operations: readonly SplitOperation[] = emptyArray()
   readonly #spinner
+  readonly #options: SplitBranchCommandOptions
 
-  constructor(_: SplitBranchCommandOptions) {
+  constructor(options: SplitBranchCommandOptions) {
     this.#spinner = createSpinner()
+    this.#options = options
   }
 
   public async execute() {
@@ -56,6 +66,25 @@ export class SplitBranchCommand {
     const files = context.files
     this.#branches = context.branches
 
+    const splitContext = resolveSplitContext(
+      {
+        source: this.#options.sourceBranch,
+        destination: this.#options.destinationBranch,
+      },
+      this.#currentBranch,
+    )
+
+    // TODO: Handle source != current (Task 19)
+    if (!splitContext.currentBranchIsSource) {
+      // For now, we just warn or log? Or maybe we can't do anything yet.
+      // Leaving files as is (worktree) which is technically wrong if we wanted another branch.
+    }
+
+    // Set destination if resolved (e.g. defaulting to current when source is other)
+    if (splitContext.destinationBranch) {
+      this.#branchChoice = splitContext.destinationBranch
+    }
+
     if (files.length === 0) {
       showOutro('No modified files found. Nothing to split.')
       return false
@@ -75,7 +104,10 @@ export class SplitBranchCommand {
     }
     this.#filesToCopy = filesToCopy
     this.#filesToRemove = await promptFilesToRemove(filesToCopy)
-    this.#branchChoice = await promptDestinationBranch(this.#branches)
+
+    if (!this.#branchChoice) {
+      this.#branchChoice = await promptDestinationBranch(this.#branches)
+    }
     return true
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeSplitOperations } from './logic.js'
+import { computeSplitOperations, resolveSplitContext } from './logic.js'
 import type { GitFile } from './models.js'
 
 describe('computeSplitOperations', () => {
@@ -62,5 +62,46 @@ describe('computeSplitOperations', () => {
     // Should have warning
     expect(warnings).toHaveLength(1)
     expect(warnings[0]).toContain('Cannot remove "delete.txt"')
+  })
+})
+
+describe('resolveSplitContext', () => {
+  const current = 'main'
+
+  it('defaults source to current branch', () => {
+    const result = resolveSplitContext({}, current)
+    expect(result.sourceBranch).toBe(current)
+    expect(result.currentBranchIsSource).toBe(true)
+  })
+
+  it('uses provided source branch', () => {
+    const result = resolveSplitContext({ source: 'feature' }, current)
+    expect(result.sourceBranch).toBe('feature')
+    expect(result.currentBranchIsSource).toBe(false)
+  })
+
+  it('leaves destination empty if source is current (requires prompt)', () => {
+    const result = resolveSplitContext({}, current)
+    expect(result.destinationBranch).toBe('')
+  })
+
+  it('defaults destination to current if source is different', () => {
+    const result = resolveSplitContext({ source: 'feature' }, current)
+    expect(result.destinationBranch).toBe(current)
+  })
+
+  it('uses provided destination branch', () => {
+    const result = resolveSplitContext({ destination: 'feature-2' }, current)
+    expect(result.destinationBranch).toBe('feature-2')
+  })
+
+  it('handles both source and destination provided', () => {
+    const result = resolveSplitContext(
+      { source: 'feat-a', destination: 'feat-b' },
+      current,
+    )
+    expect(result.sourceBranch).toBe('feat-a')
+    expect(result.destinationBranch).toBe('feat-b')
+    expect(result.currentBranchIsSource).toBe(false)
   })
 })
