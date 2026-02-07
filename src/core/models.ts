@@ -29,3 +29,8 @@ export interface SplitOperation {
   destinationBranch: string
   sourceBranch: string
 }
+
+export interface SplitOptions {
+  newBranch: string
+  sourceBranch: string
+}

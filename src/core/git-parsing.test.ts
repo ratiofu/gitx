@@ -3,7 +3,7 @@ import { parseBranchList, parseDiffNameStatus } from './git-parsing.js'
 
 describe('git-parsing', () => {
   describe('parseDiffNameStatus', () => {
-    it('should parse M and A status', () => {
+    it('parses M and A status', () => {
       const output = 'M\tfile1.txt\nA\tfile2.txt'
       const result = parseDiffNameStatus(output)
       expect(result).toEqual([
@@ -12,12 +12,12 @@ describe('git-parsing', () => {
       ])
     })
 
-    it('should return empty array for empty input', () => {
+    it('returns empty array for empty input', () => {
       expect(parseDiffNameStatus('')).toEqual([])
       expect(parseDiffNameStatus('   ')).toEqual([])
     })
 
-    it('should parse renames and copies', () => {
+    it('parses renames and copies', () => {
       // R100 old.txt new.txt
       const output = 'R100\told.txt\tnew.txt\nC100\tsrc.txt\tdest.txt'
       const result = parseDiffNameStatus(output)
@@ -29,7 +29,7 @@ describe('git-parsing', () => {
   })
 
   describe('parseBranchList', () => {
-    it('should parse custom format', () => {
+    it('parses custom format', () => {
       const output =
         'main||sha1|2023-01-01T00:00:00Z\nfeature|*|sha2|2023-01-02T00:00:00Z'
       const result = parseBranchList(output)
@@ -40,7 +40,7 @@ describe('git-parsing', () => {
       expect(result[1].isCurrent).toBe(true)
     })
 
-    it('should return empty array for empty input', () => {
+    it('returns empty array for empty input', () => {
       expect(parseBranchList('')).toEqual([])
       expect(parseBranchList('   ')).toEqual([])
     })

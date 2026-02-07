@@ -14,26 +14,26 @@ describe('GitTestRig', () => {
     await rig.cleanup()
   })
 
-  it('should initialize a git repo', async () => {
+  it('initializes a git repo', async () => {
     const { stdout } = await rig.git('rev-parse', '--is-inside-work-tree')
     expect(stdout.trim()).toBe('true')
   })
 
-  it('should create commits', async () => {
+  it('creates commits', async () => {
     await rig.createCommit('test.txt', 'hello world')
     const { stdout } = await rig.git('log', '--oneline')
     expect(stdout).toContain('Add test.txt')
     expect(existsSync(join(rig.dir, 'test.txt'))).toBe(true)
   })
 
-  it('should create branches', async () => {
+  it('creates branches', async () => {
     await rig.createBranch('feature')
     await rig.checkout('feature')
     const current = await rig.currentBranch()
     expect(current).toBe('feature')
   })
 
-  it('should create branch from start point', async () => {
+  it('creates branch from start point', async () => {
     await rig.createCommit('v1.txt', 'v1')
     const { stdout: sha } = await rig.git('rev-parse', 'HEAD')
     await rig.createCommit('v2.txt', 'v2')
@@ -43,7 +43,7 @@ describe('GitTestRig', () => {
     expect(await rig.fileExists('v2.txt')).toBe(false)
   })
 
-  it('should handle file manipulations', async () => {
+  it('handles file manipulations', async () => {
     await rig.writeFile('folder/file.txt', 'hello')
     expect(await rig.fileExists('folder/file.txt')).toBe(true)
     expect(await rig.getFileContent('folder/file.txt')).toBe('hello')
@@ -59,7 +59,7 @@ describe('GitTestRig', () => {
     expect(await rig.fileExists('folder/file.txt')).toBe(false)
   })
 
-  it('should return false for non-existent files', async () => {
+  it('returns false for non-existent files', async () => {
     expect(await rig.fileExists('non-existent.txt')).toBe(false)
   })
 })

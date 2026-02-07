@@ -11,11 +11,13 @@
 - [ ] Implementation <!-- id: 5 -->
   - [x] Phase 1: Foundation <!-- id: 16 -->
     - [x] Initialize project (pnpm, ts, vitest, biome) <!-- id: 6 -->
-    - [x] Setup Test Infrastructure (Git Rig) <!-- id: 17 -->
-  - [ ] Phase 2: Core Logic (Pure) <!-- id: 18 -->
-    - [ ] Models & Types <!-- id: 19 -->
-    - [ ] Diff Parsing Logic <!-- id: 20 -->
-    - [ ] Operation Computation Logic <!-- id: 21 -->
+    - [x] Setup Test Infrastructure (Git Test Rig) <!-- id: 17 -->
+      - [x] Enhance GitTestRig (dirty, staging, history) <!-- id: 17a -->
+      - [x] Keep Gherkin Linting <!-- id: 17d -->
+  - [x] Phase 2: Core Logic (Pure) <!-- id: 18 -->
+    - [x] Models & Types <!-- id: 19 -->
+    - [x] Diff Parsing Logic <!-- id: 20 -->
+    - [x] Operation Computation Logic (Invariant: Copy-before-delete) <!-- id: 21 -->
   - [ ] Phase 3: Shell & Command (Imperative) <!-- id: 22 -->
     - [ ] Git Wrappers (`execa`) <!-- id: 23 -->
     - [ ] TUI Wrappers (`@clack/prompts`) <!-- id: 24 -->
