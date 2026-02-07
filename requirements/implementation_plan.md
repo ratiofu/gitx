@@ -48,7 +48,15 @@ Behavior requirements in `requirements/split-branch.feature`.
 
 2.a **Core Models**: Define types in `src/core/models.ts` (`GitFile`, `Branch`, `SplitOperation`).
 2.b **Diff Logic**: Implement `parseDiff(rawOutput: string): GitFile[]` in `src/core/git-parsing.ts`.
-2.c **Selection Logic**: Implement `computeOperations(selection, options): Command[]` in `src/core/logic.ts` that takes a user selection and returns a list of abstract Git commands to run.
+2.c **Selection Logic**: Implement `computeOperations(selection, options): Command[]` in `src/core/logic.ts`.
+    - **Input**: Source Branch, Destination Branch, Selected Files (paths).
+    - **Logic**:
+        - Files selected are "copied" (applied) to Destination.
+        - User is prompted to select which of the copied files should be "removed" (reverted/deleted) from Source.
+        - Selected files are removed from Source:
+            - If Source == Current: Unstage/Delete in worktree.
+            - If Source != Current: Create a new commit in Source removing the files.
+    - **Output**: List of abstract Git commands.
 
 ### Phase 3: Shell & Command (Imperative)
 
@@ -61,6 +69,15 @@ Behavior requirements in `requirements/split-branch.feature`.
         - Support `source` != current branch (splitting committed files from another branch).
         - If `source` is another branch, use `git diff --name-status destination...source` to find candidates.
     - **Wire up Core Logic**: Connect TUI, Arguments, and Core Logic.
+        - **Alias**: Support `sb` as an alias for `split-branch`.
+        - **Destination First**: Resolve or prompt for destination branch.
+        - **Source Second**: Resolve or prompt for source branch (excluding Destination). If no branches remain, exit.
+        - **Common Ancestor**: Find merge-base of Source and Destination (or their upstream, if new).
+        - **Candidate Enumeration**:
+            - `#sourceFiles`: Files changed in Source since merge-base.
+            - `#destinationFiles`: Files changed in Destination since merge-base.
+        - **Selection**: User selects from `#sourceFiles`.
+        - **Validation**: Warn if selected file is in `#destinationFiles` (overwrite risk).
 
 ### Phase 4: Verification
 

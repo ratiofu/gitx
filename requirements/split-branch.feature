@@ -7,55 +7,65 @@ Feature: Split Branch
     Given I have a git repository
     And I have a branch "main" with a file "base.txt"
 
-  Scenario: Copying files to a new branch
+  Scenario: Copying files to a new branch (Interactive)
     Given I am on branch "feature-a"
     And I have committed "feature-file.txt"
-    When I run "gitx split-branch --destination feature-b"
+    When I run "gitx split-branch"
+    And I select "feature-b" as the destination branch
     And I select "feature-a" as the source branch
     And I select "feature-file.txt" to copy
     Then a branch "feature-b" exists
     And the branch "feature-b" contains "feature-file.txt"
-    And the file "feature-file.txt" in "feature-b" matches the source content
 
-  Scenario: Copying files to the current branch (unstaged)
+  Scenario: Destination branch excluded from source options
     Given I am on branch "feature-a"
+    And I have a branch "feature-b"
+    When I run "gitx split-branch -d ."
+    Then I am prompted to select a source branch
+    And "feature-a" is NOT in the source branch options
+    And "feature-b" is in the source branch options
+
+  Scenario: No available source branches
+    Given I have a git repository with only branch "main"
+    When I run "gitx split-branch -d ."
+    Then the command exits with error "No other branches available to copy from."
+
+  Scenario: Using "." alias for source
+    Given I am on branch "feature-a"
+    When I run "gitx split-branch -s ."
+    Then I am prompted to select a destination branch
+    And the source branch is determined to mean "feature-a"
+
+  Scenario: Copying files to the current branch (picking from another branch)
+    Given I am on branch "main"
     And I have a branch "feature-b" with committed "feature-b-file.txt"
-    When I run "gitx split-branch --source feature-b"
+    When I run "gitx split-branch -d ."
+    And I select "feature-b" as the source branch
     And I select "feature-b-file.txt" to copy
     Then the file "feature-b-file.txt" exists in the worktree
-    And the file "feature-b-file.txt" is NOT staged
-    And the file "feature-b-file.txt" is NOT committed in "feature-a"
+    And the file "feature-b-file.txt" is unstaged
 
-  Scenario: Removing files from source after copy
+  Scenario: Removing files from current source after copy (Interactive)
     Given I am on branch "feature-a" created from "main"
     And I have committed "wip.txt"
-    When I run "gitx split-branch --destination feature-b"
+    When I run "gitx split-branch"
+    And I select "feature-b" as the destination branch
+    And I select "feature-a" as the source branch
     And I select "wip.txt" to copy
     And I select "wip.txt" to remove from source
     Then the branch "feature-b" contains "wip.txt"
-    And the file "wip.txt" is staged for deletion in "feature-a"
+    And the file "wip.txt" is unstaged for deletion in "feature-a"
 
-  Scenario: Handling dirty working directory (pass-through)
-    Given I am on branch "feature-a"
-    And I have modified "dirty.txt"
-    When I run "gitx split-branch --destination feature-b"
-    Then the command fails with error "Working directory matches destination. Please commit or stash changes."
-
-  Scenario: Creating destination branch with prompt
-    Given I am on branch "feature-a"
-    When I run "gitx split-branch --destination non-existent-branch"
-    And I confirm creating the branch
-    Then the branch "non-existent-branch" exists
-    And the branch "non-existent-branch" is created from "feature-a"
-
-  Scenario: Source Branch Selection (Interactive)
-    Given I am on branch "feature-a"
-    And I have branches "feature-b", "main"
+  Scenario: Removing files from other source after copy (Interactive)
+    Given I am on branch "main"
+    And I have committed "wip.txt" on branch "feature-a"
     When I run "gitx split-branch"
-    And I am prompted to select a source branch
-    And the default source branch is "feature-a"
+    And I select "feature-b" as the destination branch
     And I select "feature-a" as the source branch
-    Then I am prompted to select a destination branch
+    And I select "wip.txt" to copy
+    And I select "wip.txt" to remove from source
+    Then the branch "feature-b" contains "wip.txt"
+    And a commit exists in "feature-a" that removes "wip.txt"
 
   Scenario: Source Branch Validation (Error)
     Given I am on branch "feature-a"
