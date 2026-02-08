@@ -57,6 +57,12 @@ describe('file-pick-state', () => {
       branches: [branch('feature-a')],
     }
 
+    it('returns aborted if source is the current branch', () => {
+      const result = validateSource(needsSource, 'main')
+      expect(result).toBeDefined()
+      expect(result?.reason).toContain('cannot be the current branch')
+    })
+
     it('returns aborted if source branch does not exist', () => {
       const result = validateSource(needsSource, 'non-existent')
       expect(result).toBeDefined()

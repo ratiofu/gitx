@@ -1,3 +1,5 @@
+import pc from 'picocolors'
+import { exitProcessWithCode } from '../../base/process.js'
 import {
   type AbortedState,
   type FilePickState,
@@ -119,6 +121,7 @@ function failed(state: FilePickState): state is AbortedState {
   return state.phase === 'aborted'
 }
 
-function abort(state: AbortedState) {
-  showOutro(state.reason)
+function abort(state: AbortedState): never {
+  showOutro(pc.red(state.reason))
+  exitProcessWithCode(1)
 }

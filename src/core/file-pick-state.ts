@@ -66,13 +66,16 @@ export function validateSource(
   state: NeedsSourceState,
   sourceBranch: string,
 ): AbortedState | undefined {
-  const exists = state.branches.some((b) => b.name === sourceBranch)
-  if (!exists) {
+  if (sourceBranch === state.currentBranch)
+    return {
+      phase: 'aborted',
+      reason: `Source branch cannot be the current branch ('${sourceBranch}').`,
+    }
+  if (!state.branches.some((b) => b.name === sourceBranch))
     return {
       phase: 'aborted',
       reason: `Source branch '${sourceBranch}' does not exist.`,
     }
-  }
   return undefined
 }
 

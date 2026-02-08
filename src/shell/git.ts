@@ -1,6 +1,7 @@
 import { execa } from 'execa'
 import {
   GIT_BRANCH_LIST_ARGS,
+  GIT_DIFF_NAME_STATUS_ARGS,
   parseBranchList,
   parseDiffNameStatus,
 } from '../core/git-parsing.js'
@@ -56,7 +57,7 @@ export async function getDiffBetweenBranches(
   cwd?: string,
 ) {
   const output = await git(
-    ['diff', '--name-status', '-M', `${baseBranch}...${sourceBranch}`],
+    [...GIT_DIFF_NAME_STATUS_ARGS, '-M', `${baseBranch}...${sourceBranch}`],
     { cwd },
   )
   return parseDiffNameStatus(output)

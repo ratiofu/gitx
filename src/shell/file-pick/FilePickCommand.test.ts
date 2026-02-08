@@ -1,6 +1,7 @@
 import type { SpinnerResult } from '@clack/prompts'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mock } from 'vitest-mock-extended'
+import * as processUtil from '../../base/process.js'
 import type { GitFile } from '../../core/models.js'
 import { GitTestRig } from '../../test/git-test-rig.js'
 import * as tui from '../tui.js'
@@ -9,6 +10,7 @@ import * as prompts from './prompts.js'
 
 vi.mock('./prompts.js')
 vi.mock('../tui.js')
+vi.mock('../../base/process.js')
 vi.mock('./execute.js', () => ({
   executeFilePick: vi.fn().mockResolvedValue('Done.'),
 }))
@@ -77,6 +79,20 @@ describe('file-pick command', () => {
     expect(tui.showOutro).toHaveBeenCalledWith(
       expect.stringContaining("'non-existent' does not exist"),
     )
+    expect(processUtil.exitProcessWithCode).toHaveBeenCalledWith(1)
+  })
+
+  it('rejects source branch that is the current branch', async () => {
+    process.chdir(rig.dir)
+    await rig.createCommit('file.txt', 'content')
+    await rig.createBranch('some-branch')
+
+    await runCommand({ sourceBranch: 'main' })
+
+    expect(tui.showOutro).toHaveBeenCalledWith(
+      expect.stringContaining('cannot be the current branch'),
+    )
+    expect(processUtil.exitProcessWithCode).toHaveBeenCalledWith(1)
   })
 
   it('exits if no other branches available', async () => {
@@ -88,6 +104,7 @@ describe('file-pick command', () => {
     expect(tui.showOutro).toHaveBeenCalledWith(
       expect.stringContaining('No other branches'),
     )
+    expect(processUtil.exitProcessWithCode).toHaveBeenCalledWith(1)
   })
 
   it('exits if no differences found', async () => {
@@ -101,6 +118,7 @@ describe('file-pick command', () => {
     expect(tui.showOutro).toHaveBeenCalledWith(
       expect.stringContaining('No differences found'),
     )
+    expect(processUtil.exitProcessWithCode).toHaveBeenCalledWith(1)
   })
 
   it('exits if no files selected', async () => {
@@ -117,7 +135,10 @@ describe('file-pick command', () => {
 
     await runCommand()
 
-    expect(tui.showOutro).toHaveBeenCalledWith('No files selected.')
+    expect(tui.showOutro).toHaveBeenCalledWith(
+      expect.stringContaining('No files selected'),
+    )
+    expect(processUtil.exitProcessWithCode).toHaveBeenCalledWith(1)
   })
 
   it('cancels if user rejects the plan', async () => {

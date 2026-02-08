@@ -1,4 +1,4 @@
-import { mkdtemp } from 'node:fs/promises'
+import { mkdtemp, rmdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { err, ok, type Result } from '../../base/result.js'
@@ -35,19 +35,23 @@ async function deleteFromSourceViaWorktree(
   plan: FilePickPlan,
 ): Promise<Result<void>> {
   const worktreeDir = await mkdtemp(join(tmpdir(), 'gitx-worktree-'))
+  let worktreeCreated = false
   try {
     await addWorktree(worktreeDir, plan.sourceBranch)
+    worktreeCreated = true
     const paths = plan.filesToDelete.map((f) => f.path)
     await removeFiles(paths, worktreeDir)
     await commit(`Remove files picked into ${plan.currentBranch}`, worktreeDir)
     await removeWorktree(worktreeDir)
     return ok()
   } catch (error) {
+    if (!worktreeCreated) await rmdir(worktreeDir).catch(() => {})
     const message = error instanceof Error ? error.message : String(error)
-    return err(
-      `Copied ${plan.filesToCopy.length} file(s) as unstaged changes.\n` +
-        `Failed to delete files from ${plan.sourceBranch}: ${message}\n` +
-        `The worktree is at: ${worktreeDir}`,
-    )
+    const lines = [
+      `Copied ${plan.filesToCopy.length} file(s) as unstaged changes.`,
+      `Failed to delete files from ${plan.sourceBranch}: ${message}`,
+    ]
+    if (worktreeCreated) lines.push(`The worktree is at: ${worktreeDir}`)
+    return err(lines.join('\n'))
   }
 }
