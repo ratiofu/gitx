@@ -71,3 +71,23 @@ export async function createBranch(
 export async function getHeadSha(cwd?: string) {
   return git(['rev-parse', 'HEAD'], { cwd })
 }
+
+/**
+ * Get the files that differ between two branches.
+ * Uses the triple-dot syntax to find changes in sourceBranch that diverge from baseBranch.
+ *
+ * @param baseBranch - The base branch (e.g., destination)
+ * @param sourceBranch - The branch with changes (e.g., source)
+ */
+export async function getDiffBetweenBranches(
+  baseBranch: string,
+  sourceBranch: string,
+  cwd?: string,
+) {
+  // Use "..." to find changes in sourceBranch since the common ancestor
+  const output = await git(
+    ['diff', '--name-status', '-M', `${baseBranch}...${sourceBranch}`],
+    { cwd },
+  )
+  return parseDiffNameStatus(output)
+}

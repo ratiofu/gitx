@@ -229,4 +229,184 @@ describe('split-branch command', () => {
     // other.txt should be restored to HEAD (other content) on new branch
     expect(await rig.getFileContent('other.txt')).toBe('other content')
   })
+
+  describe('destination branch selection', () => {
+    it('resolves "." alias to current branch for destination', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('file.txt', 'content')
+      // Create another branch with a committed file
+      await rig.git('checkout', '-b', 'feature-source')
+      await rig.createCommit('feature-file.txt', 'feature content')
+      await rig.checkout('main')
+
+      const file: GitFile = { path: 'feature-file.txt', status: 'A' }
+      vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce(
+        'feature-source',
+      )
+      vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
+      vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
+      vi.mocked(prompts.confirmExecution).mockResolvedValueOnce(true)
+
+      // Use "." as destination, meaning current branch (main)
+      await runCommand({ destinationBranch: '.' })
+
+      // Should stay on main and have the file from feature-source
+      const current = await rig.currentBranch()
+      expect(current).toBe('main')
+
+      // promptDestinationBranch should NOT have been called
+      expect(prompts.promptDestinationBranch).not.toHaveBeenCalled()
+    })
+
+    it('excludes destination branch from source options', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('file.txt', 'content')
+      // Create multiple branches
+      await rig.git('checkout', '-b', 'feature-a')
+      await rig.createCommit('a.txt', 'a content')
+      await rig.checkout('main')
+      await rig.git('checkout', '-b', 'feature-b')
+      await rig.createCommit('b.txt', 'b content')
+      await rig.checkout('main')
+
+      const file: GitFile = { path: 'a.txt', status: 'A' }
+      vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce('feature-a')
+      vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
+      vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
+      vi.mocked(prompts.confirmExecution).mockResolvedValueOnce(true)
+
+      // destination = main, so main should be excluded from source options
+      await runCommand({ destinationBranch: 'main' })
+
+      // Check that promptSourceBranch was called without 'main' in its options
+      expect(prompts.promptSourceBranch).toHaveBeenCalledWith(
+        expect.not.arrayContaining([
+          expect.objectContaining({ name: 'main' }),
+        ]),
+        expect.any(String),
+      )
+    })
+
+    it('errors when no other branches available as source', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('file.txt', 'content')
+
+      // Only main branch exists, use it as destination
+      await runCommand({ destinationBranch: '.' })
+
+      expect(tui.showOutro).toHaveBeenCalledWith(
+        'No other branches available to copy from.',
+      )
+    })
+  })
+
+  describe('source branch alias', () => {
+    it('resolves "." alias to current branch for source', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('file.txt', 'content')
+      await rig.modifyFile('file.txt', 'modified')
+
+      const file: GitFile = { path: 'file.txt', status: 'M' }
+      vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
+      vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
+      vi.mocked(prompts.promptDestinationBranch).mockResolvedValueOnce(
+        'feature-new',
+      )
+      vi.mocked(prompts.confirmExecution).mockResolvedValueOnce(true)
+
+      // Use "." as source, meaning current branch (main)
+      await runCommand({ sourceBranch: '.' })
+
+      // Source prompt should NOT be called
+      expect(prompts.promptSourceBranch).not.toHaveBeenCalled()
+
+      // Should have created a new branch
+      const current = await rig.currentBranch()
+      expect(current).toBe('feature-new')
+    })
+  })
+
+  describe('copying from another branch', () => {
+    it('copies committed files from source branch to current (destination = current)', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('base.txt', 'base content')
+
+      // Create a feature branch and commit a file
+      await rig.git('checkout', '-b', 'feature-source')
+      await rig.createCommit('feature-file.txt', 'feature content')
+      await rig.checkout('main')
+
+      // main doesn't have feature-file.txt
+      expect(await rig.fileExists('feature-file.txt')).toBe(false)
+
+      const file: GitFile = { path: 'feature-file.txt', status: 'A' }
+      vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce(
+        'feature-source',
+      )
+      vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
+      vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
+      vi.mocked(prompts.confirmExecution).mockResolvedValueOnce(true)
+
+      // destination = current branch (main)
+      await runCommand({ destinationBranch: '.' })
+
+      // Should stay on main
+      const current = await rig.currentBranch()
+      expect(current).toBe('main')
+
+      // The file from feature-source should now exist
+      expect(await rig.fileExists('feature-file.txt')).toBe(true)
+      expect(await rig.getFileContent('feature-file.txt')).toBe(
+        'feature content',
+      )
+    })
+
+    it('copies committed files from source branch to a new branch', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('base.txt', 'base content')
+
+      // Create a feature branch with a committed file
+      await rig.git('checkout', '-b', 'feature-source')
+      await rig.createCommit('source-file.txt', 'source content')
+      await rig.checkout('main')
+
+      const file: GitFile = { path: 'source-file.txt', status: 'A' }
+      vi.mocked(prompts.promptSourceBranch).mockResolvedValueOnce(
+        'feature-source',
+      )
+      vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
+      vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
+      vi.mocked(prompts.confirmExecution).mockResolvedValueOnce(true)
+
+      // destination = a NEW branch
+      await runCommand({ destinationBranch: 'feature-new' })
+
+      // Should be on the new branch
+      const current = await rig.currentBranch()
+      expect(current).toBe('feature-new')
+
+      // The file from feature-source should exist on the new branch
+      expect(await rig.fileExists('source-file.txt')).toBe(true)
+    })
+
+    it('exits with message when no differences between branches', async () => {
+      process.chdir(rig.dir)
+      await rig.createCommit('base.txt', 'base content')
+
+      // Create a branch that is identical to main
+      await rig.git('checkout', '-b', 'identical-branch')
+      await rig.checkout('main')
+
+      // Source = identical-branch, Destination = main
+      // No differences, should exit
+      await runCommand({
+        sourceBranch: 'identical-branch',
+        destinationBranch: '.',
+      })
+
+      expect(tui.showOutro).toHaveBeenCalledWith(
+        expect.stringContaining('No differences found'),
+      )
+    })
+  })
 })

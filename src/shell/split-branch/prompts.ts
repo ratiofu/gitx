@@ -2,7 +2,7 @@ import pc from 'picocolors'
 
 const { dim, green } = pc
 
-import type { Branch, GitFile, SplitOperation } from '../../core/models.js'
+import type { Branch, GitFile } from '../../core/models.js'
 import {
   askText,
   confirmAction,
@@ -87,19 +87,17 @@ export async function promptDestinationBranch(
 }
 
 export function showPlan(
-  currentBranch: string,
-  newBranchName: string,
-  operations: readonly SplitOperation[],
+  sourceBranch: string,
+  destinationBranch: string,
+  filesToCopy: readonly GitFile[],
+  filesToRemove: readonly GitFile[],
 ) {
-  const copyOps = operations.filter((o) => o.type === 'copy')
-  const removeOps = operations.filter((o) => o.type === 'remove-source')
-
-  let summary = `Plan:\n`
-  summary += `  • Source: ${dim(currentBranch)}\n`
-  summary += `  • Dest:   ${green(newBranchName)}\n\n`
-  summary += `  • Copying ${copyOps.length} file(s) to ${newBranchName}\n`
-  if (removeOps.length > 0) {
-    summary += `  • Removing ${removeOps.length} file(s) from ${currentBranch}\n`
+  let summary = 'Plan:\n'
+  summary += `  • Source: ${dim(sourceBranch)}\n`
+  summary += `  • Dest:   ${green(destinationBranch)}\n\n`
+  summary += `  • Copying ${filesToCopy.length} file(s) to ${destinationBranch}\n`
+  if (filesToRemove.length > 0) {
+    summary += `  • Removing ${filesToRemove.length} file(s) from ${sourceBranch}\n`
   }
 
   showNote(summary, 'Review')

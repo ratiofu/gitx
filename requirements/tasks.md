@@ -19,7 +19,7 @@
  17. [x] Implement Source Branch selection logic <!-- id: 27 -->
  18. [x] Finish wiring up all logic for the `split-branch` command <!-- id: 25 -->
  19. [x] Allow `sb` as an alias for `split-branch` <!-- id: 30 -->
- 20. [ ] Support splitting committed files (curr: worktree only) <!-- id: 28 -->
- 21. [ ] Fix Source/Dest Assumption: Default to Current = Destination <!-- id: 29 -->
+ 20. [x] Support splitting committed files (curr: worktree only) <!-- id: 28 -->
+ 21. [x] Fix Source/Dest Assumption: Default to Current = Destination <!-- id: 29 -->
  22. [ ] Automated tests (Vitest + Gherkin) <!-- id: 15 -->
  23. [ ] Manual testing <!-- id: 9 -->

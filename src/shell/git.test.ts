@@ -117,4 +117,157 @@ describe('git shell wrappers', () => {
       status: 'M',
     })
   })
+
+  describe('getDiffBetweenBranches', () => {
+    it('finds added files in source branch', async () => {
+      // Create a base commit on main
+      await rig.createCommit('base.txt', 'base content')
+
+      // Create a feature branch with a new file
+      await rig.git('checkout', '-b', 'feature')
+      await rig.createCommit('feature.txt', 'feature content')
+
+      // Diff from main's perspective: what's added in feature?
+      const diff = await git.getDiffBetweenBranches('main', 'feature', rig.dir)
+
+      expect(diff).toHaveLength(1)
+      expect(diff).toContainEqual({
+        path: 'feature.txt',
+        status: 'A',
+      })
+    })
+
+    it('finds modified files in source branch', async () => {
+      // Create a base commit on main
+      await rig.createCommit('shared.txt', 'original content')
+
+      // Create a feature branch and modify the file
+      await rig.git('checkout', '-b', 'feature')
+      await rig.createCommit('shared.txt', 'modified in feature')
+
+      const diff = await git.getDiffBetweenBranches('main', 'feature', rig.dir)
+
+      expect(diff).toHaveLength(1)
+      expect(diff).toContainEqual({
+        path: 'shared.txt',
+        status: 'M',
+      })
+    })
+
+    it('finds deleted files in source branch', async () => {
+      // Create a file and commit it
+      await rig.createCommit('to-delete.txt', 'will be deleted')
+
+      // Create a feature branch and delete the file
+      await rig.git('checkout', '-b', 'feature')
+      await rig.deleteFile('to-delete.txt')
+      await rig.git('add', '-A')
+      await rig.git('commit', '-m', 'Delete file')
+
+      const diff = await git.getDiffBetweenBranches('main', 'feature', rig.dir)
+
+      expect(diff).toHaveLength(1)
+      expect(diff).toContainEqual({
+        path: 'to-delete.txt',
+        status: 'D',
+      })
+    })
+
+    it('finds renamed files in source branch', async () => {
+      // Create a file and commit it
+      await rig.createCommit('old-name.txt', 'content that stays the same')
+
+      // Create a feature branch and rename the file
+      await rig.git('checkout', '-b', 'feature')
+      await rig.git('mv', 'old-name.txt', 'new-name.txt')
+      await rig.git('commit', '-m', 'Rename file')
+
+      const diff = await git.getDiffBetweenBranches('main', 'feature', rig.dir)
+
+      expect(diff).toHaveLength(1)
+      expect(diff[0].status).toBe('R')
+      expect(diff[0].path).toBe('new-name.txt')
+      expect(diff[0].originalPath).toBe('old-name.txt')
+    })
+
+    it('returns empty array for identical branches', async () => {
+      await rig.createCommit('file.txt', 'content')
+
+      // Create a branch at the same commit
+      await rig.git('checkout', '-b', 'identical')
+
+      const diff = await git.getDiffBetweenBranches(
+        'main',
+        'identical',
+        rig.dir,
+      )
+
+      expect(diff).toHaveLength(0)
+    })
+
+    it('finds multiple files with different statuses', async () => {
+      // Setup: create files on main
+      await rig.createCommit('keep.txt', 'unchanged')
+      await rig.createCommit('modify.txt', 'will be modified')
+      await rig.createCommit('delete.txt', 'will be deleted')
+
+      // Create feature branch with multiple changes
+      await rig.git('checkout', '-b', 'feature')
+      await rig.createCommit('add.txt', 'new file')
+      await rig.createCommit('modify.txt', 'modified content')
+      await rig.deleteFile('delete.txt')
+      await rig.git('add', '-A')
+      await rig.git('commit', '-m', 'Delete file')
+
+      const diff = await git.getDiffBetweenBranches('main', 'feature', rig.dir)
+
+      expect(diff).toHaveLength(3)
+      expect(diff).toContainEqual({ path: 'add.txt', status: 'A' })
+      expect(diff).toContainEqual({ path: 'modify.txt', status: 'M' })
+      expect(diff).toContainEqual({ path: 'delete.txt', status: 'D' })
+    })
+
+    it('handles nested directory structures', async () => {
+      await rig.createCommit('base.txt', 'base')
+
+      await rig.git('checkout', '-b', 'feature')
+      await rig.createCommit('src/components/Button.tsx', 'button code')
+      await rig.createCommit('src/utils/helpers.ts', 'helpers')
+
+      const diff = await git.getDiffBetweenBranches('main', 'feature', rig.dir)
+
+      expect(diff).toHaveLength(2)
+      expect(diff).toContainEqual({
+        path: 'src/components/Button.tsx',
+        status: 'A',
+      })
+      expect(diff).toContainEqual({
+        path: 'src/utils/helpers.ts',
+        status: 'A',
+      })
+    })
+
+    it('uses three-dot diff to find changes since divergence', async () => {
+      // Create initial file
+      await rig.createCommit('base.txt', 'base')
+
+      // Create feature branch
+      await rig.git('checkout', '-b', 'feature')
+      await rig.createCommit('feature.txt', 'feature content')
+
+      // Go back to main and add another commit
+      await rig.checkout('main')
+      await rig.createCommit('main-only.txt', 'main content')
+
+      // Three-dot diff should only show feature.txt, not main-only.txt
+      // Because it compares from the merge-base
+      const diff = await git.getDiffBetweenBranches('main', 'feature', rig.dir)
+
+      expect(diff).toHaveLength(1)
+      expect(diff).toContainEqual({
+        path: 'feature.txt',
+        status: 'A',
+      })
+    })
+  })
 })

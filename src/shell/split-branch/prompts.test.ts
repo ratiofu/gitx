@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { Branch, GitFile, SplitOperation } from '../../core/models.js'
+import type { Branch, GitFile } from '../../core/models.js'
 import * as tui from '../tui.js'
 import {
   confirmExecution,
@@ -116,29 +116,38 @@ describe('prompts', () => {
 
   describe('showPlan', () => {
     it('displays summary with copy operations', () => {
-      const ops = [
-        { type: 'copy', file: { path: 'a' } },
-        { type: 'copy', file: { path: 'b' } },
-      ] as unknown as SplitOperation[]
+      const files: GitFile[] = [
+        { path: 'a', status: 'M' },
+        { path: 'b', status: 'A' },
+      ]
 
-      showPlan('main', 'feature', ops)
+      showPlan('main', 'feature', files, [])
 
       expect(tui.showNote).toHaveBeenCalledWith(
         expect.stringContaining('Copying 2 file(s)'),
         'Review',
       )
+      expect(tui.showNote).toHaveBeenCalledWith(
+        expect.stringContaining('Source: main'),
+        'Review',
+      )
+      expect(tui.showNote).toHaveBeenCalledWith(
+        expect.stringContaining('Dest:   feature'),
+        'Review',
+      )
     })
 
     it('displays summary with remove operations', () => {
-      const ops = [
-        { type: 'copy', file: { path: 'a' } },
-        { type: 'remove-source', file: { path: 'a' } },
-      ] as unknown as SplitOperation[]
+      const filesToCopy: GitFile[] = [
+        { path: 'a', status: 'M' },
+        { path: 'b', status: 'A' },
+      ]
+      const filesToRemove: GitFile[] = [{ path: 'a', status: 'M' }]
 
-      showPlan('main', 'feature', ops)
+      showPlan('main', 'feature', filesToCopy, filesToRemove)
 
       expect(tui.showNote).toHaveBeenCalledWith(
-        expect.stringContaining('Removing 1 file(s)'),
+        expect.stringContaining('Removing 1 file(s) from main'),
         'Review',
       )
     })
