@@ -41,7 +41,10 @@ async function deleteFromSourceViaWorktree(
     worktreeCreated = true
     const paths = plan.filesToDelete.map((f) => f.path)
     await removeFiles(paths, worktreeDir)
-    await commit(`Remove files picked into ${plan.currentBranch}`, worktreeDir)
+    await commit(
+      `gitx: removed files picked into \`${plan.currentBranch}\``,
+      worktreeDir,
+    )
     await removeWorktree(worktreeDir)
     return ok()
   } catch (error) {

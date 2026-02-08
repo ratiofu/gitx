@@ -92,7 +92,7 @@ interface FilePickPlan {
 2. **Delete via worktree** (if any files selected for deletion):
    - `git worktree add <tmpdir> <sourceBranch>`
    - `git rm <files>` (cwd = tmpdir)
-   - `git commit -m "Remove files picked into <currentBranch>"` (cwd = tmpdir)
+   - `git commit -m "gitx: removed files picked into \`<currentBranch>\`"` (cwd = tmpdir)
    - On success: `git worktree remove <tmpdir>`
    - On failure: warn user about the leftover worktree at `<tmpdir>`
 
