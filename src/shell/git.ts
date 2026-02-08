@@ -1,7 +1,6 @@
 import { execa } from 'execa'
 import {
   GIT_BRANCH_LIST_ARGS,
-  GIT_DIFF_NAME_STATUS_ARGS,
   parseBranchList,
   parseDiffNameStatus,
 } from '../core/git-parsing.js'
@@ -35,11 +34,6 @@ export async function checkGitInstallation(cwd?: string) {
   }
 }
 
-export async function getDiffNameStatus(cwd?: string) {
-  const output = await git(GIT_DIFF_NAME_STATUS_ARGS, { cwd })
-  return parseDiffNameStatus(output)
-}
-
 export async function getBranchList(cwd?: string) {
   const output = await git(GIT_BRANCH_LIST_ARGS, { cwd })
   return parseBranchList(output)
@@ -56,18 +50,42 @@ export async function checkout(
   await git(['checkout', branchName], { cwd })
 }
 
-export async function createBranch(
-  branchName: string,
-  startPoint?: string,
+export async function getDiffBetweenBranches(
+  baseBranch: string,
+  sourceBranch: string,
   cwd?: string,
-): Promise<void> {
-  const args = ['checkout', '-b', branchName]
-  if (startPoint) {
-    args.push(startPoint)
-  }
-  await git(args, { cwd })
+) {
+  const output = await git(
+    ['diff', '--name-status', '-M', `${baseBranch}...${sourceBranch}`],
+    { cwd },
+  )
+  return parseDiffNameStatus(output)
 }
 
-export async function getHeadSha(cwd?: string) {
-  return git(['rev-parse', 'HEAD'], { cwd })
+// --- Worktree operations ---
+
+export async function addWorktree(
+  path: string,
+  branch: string,
+  cwd?: string,
+): Promise<void> {
+  await git(['worktree', 'add', path, branch], { cwd })
+}
+
+export async function removeWorktree(
+  path: string,
+  cwd?: string,
+): Promise<void> {
+  await git(['worktree', 'remove', path], { cwd })
+}
+
+export async function removeFiles(
+  paths: readonly string[],
+  cwd: string,
+): Promise<void> {
+  await git(['rm', ...paths], { cwd })
+}
+
+export async function commit(message: string, cwd: string): Promise<void> {
+  await git(['commit', '-m', message], { cwd })
 }

@@ -6,7 +6,7 @@ export const GIT_DIFF_NAME_STATUS_ARGS = ['diff', '--name-status', '-M']
 export const GIT_BRANCH_LIST_ARGS = [
   'branch',
   '--sort=-committerdate',
-  '--format=%(refname:short)|%(HEAD)|%(objectname)|%(committerdate:iso8601)',
+  '--format=%(refname:short)|%(HEAD)|%(committerdate:iso8601)',
 ]
 
 /**
@@ -47,7 +47,7 @@ export function parseDiffNameStatus(output: string): readonly GitFile[] {
  * Expects custom pipe-separated format.
  */
 export function parseBranchList(output: string): readonly Branch[] {
-  // Parsing 'git branch --sort=-committerdate --format="%(refname:short)|%(HEAD)|%(objectname)|%(committerdate:iso8601)"'
+  // Parsing 'git branch --sort=-committerdate --format="%(refname:short)|%(HEAD)|%(committerdate:iso8601)"'
   if (!output.trim()) {
     return emptyArray()
   }
@@ -57,11 +57,10 @@ export function parseBranchList(output: string): readonly Branch[] {
       .trim()
       .split('\n')
       .map((line) => {
-        const [name, head, sha, date] = line.split('|')
+        const [name, head, date] = line.split('|')
         return readOnly({
           name,
           isCurrent: head === '*',
-          sha,
           lastCommitDate: new Date(date),
         } satisfies Branch)
       }),
