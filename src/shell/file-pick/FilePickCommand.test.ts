@@ -116,7 +116,7 @@ describe('file-pick command', () => {
     await runCommand({ sourceBranch: 'identical' })
 
     expect(tui.showOutro).toHaveBeenCalledWith(
-      expect.stringContaining('No differences found'),
+      expect.stringContaining('No copyable files found'),
     )
     expect(processUtil.exitProcessWithCode).toHaveBeenCalledWith(1)
   })

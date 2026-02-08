@@ -79,22 +79,25 @@ export function validateSource(
   return undefined
 }
 
+const COPYABLE_STATUSES: ReadonlySet<string> = new Set(['A', 'M', 'R', 'C'])
+
 export function selectSource(
   state: NeedsSourceState,
   sourceBranch: string,
   candidates: readonly GitFile[],
 ): NeedsFileSelectionState | AbortedState {
-  if (candidates.length === 0) {
+  const copyable = candidates.filter((f) => COPYABLE_STATUSES.has(f.status))
+  if (copyable.length === 0) {
     return {
       phase: 'aborted',
-      reason: `No differences found between ${sourceBranch} and ${state.currentBranch}.`,
+      reason: `No copyable files found between ${sourceBranch} and ${state.currentBranch}.`,
     }
   }
   return {
     phase: 'needs-file-selection',
     currentBranch: state.currentBranch,
     sourceBranch,
-    candidates,
+    candidates: copyable,
   }
 }
 

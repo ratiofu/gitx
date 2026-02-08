@@ -86,7 +86,26 @@ describe('file-pick-state', () => {
       const state = selectSource(needsSource, 'feature-a', [])
       expect(state.phase).toBe('aborted')
       if (state.phase === 'aborted') {
-        expect(state.reason).toContain('No differences found')
+        expect(state.reason).toContain('No copyable files found')
+      }
+    })
+
+    it('aborts if all candidates are deleted', () => {
+      const state = selectSource(needsSource, 'feature-a', [
+        file('gone.txt', 'D'),
+      ])
+      expect(state.phase).toBe('aborted')
+      if (state.phase === 'aborted') {
+        expect(state.reason).toContain('No copyable files found')
+      }
+    })
+
+    it('filters out deleted files from candidates', () => {
+      const candidates = [file('a.txt', 'A'), file('gone.txt', 'D')]
+      const state = selectSource(needsSource, 'feature-a', candidates)
+      expect(state.phase).toBe('needs-file-selection')
+      if (state.phase === 'needs-file-selection') {
+        expect(state.candidates).toEqual([file('a.txt', 'A')])
       }
     })
 
