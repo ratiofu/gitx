@@ -63,6 +63,8 @@ jobs:
             \`\`\`bash
             pnpm changeset add
             \`\`\`
+            
+            <sub>If these changes do not need a release, run \`pnpm changeset add --empty\`.</sub>
             `;
             
             await github.rest.issues.createComment({
