@@ -14,13 +14,14 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "dev": "tsx src/index.ts",
-    "build": "tsup src/index.ts --format esm --clean --dts",
+    "build": "pnpm quality && tsup src/index.ts --format esm --clean --dts",
     "test": "vitest run --passWithNoTests",
     "lint": "biome check .",
     "lint:fix": "biome check --fix .",
     "reqcheck": "gherkin-lint requirements/",
     "typecheck": "tsc --noEmit",
-    "quality": "./scripts/quality.sh"
+    "quality": "./scripts/quality.sh",
+    "release": "changeset publish"
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
@@ -30,6 +31,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@changesets/changelog-github": "catalog:",
+    "@changesets/cli": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "gherkin-lint": "catalog:",
