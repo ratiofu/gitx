@@ -57,7 +57,7 @@ export async function getDiffBetweenBranches(
   cwd?: string,
 ) {
   const output = await git(
-    [...GIT_DIFF_NAME_STATUS_ARGS, '-M', `${baseBranch}...${sourceBranch}`],
+    [...GIT_DIFF_NAME_STATUS_ARGS, `${baseBranch}...${sourceBranch}`],
     { cwd },
   )
   return parseDiffNameStatus(output)
