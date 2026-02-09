@@ -45,9 +45,7 @@ stateDiagram-v2
     [*] --> NeedsSource: init context
     NeedsSource --> NeedsFilesToCopy: source selected
     NeedsSource --> Aborted: no branches / invalid source
-    NeedsFilesToCopy --> NeedsFilesToDelete: files selected
-    NeedsFilesToCopy --> Aborted: no files / none selected
-    NeedsFilesToDelete --> PlanReady: deletion selection done
+    NeedsFilesToCopy --> PlanReady: files selected
     PlanReady --> Done: confirmed and executed
     PlanReady --> Aborted: user cancelled
     Aborted --> [*]
@@ -60,7 +58,6 @@ stateDiagram-v2
 type FilePickState =
   | { phase: 'needs-source'; currentBranch: string; branches: Branch[] }
   | { phase: 'needs-file-selection'; sourceBranch: string; currentBranch: string; candidates: GitFile[] }
-  | { phase: 'needs-delete-selection'; sourceBranch: string; currentBranch: string; filesToCopy: GitFile[] }
   | { phase: 'plan-ready'; plan: FilePickPlan }
   | { phase: 'aborted'; reason: string }
 ```
@@ -70,8 +67,7 @@ type FilePickState =
 - `initState(currentBranch, branches)` -> `NeedsSource | Aborted`
 - `validateSource(state, sourceBranch)` -> `Aborted | undefined`
 - `selectSource(state, sourceBranch, candidates)` -> `NeedsFileSelection | Aborted`
-- `selectFiles(state, filesToCopy)` -> `NeedsDeleteSelection | Aborted`
-- `selectDeletes(state, filesToDelete)` -> `PlanReady`
+- `selectFiles(state, filesToCopy)` -> `PlanReady | Aborted`
 
 ### Plan
 
@@ -82,19 +78,12 @@ interface FilePickPlan {
   sourceBranch: string
   currentBranch: string
   filesToCopy: GitFile[]    // copy from source to current, unstaged
-  filesToDelete: GitFile[]  // delete from source via worktree
 }
 ```
 
 ### Execution
 
 1. **Copy**: For each file, `git checkout <source> -- <file>` then `git restore --staged <file>` (leaves file unstaged).
-2. **Delete via worktree** (if any files selected for deletion):
-   - `git worktree add <tmpdir> <sourceBranch>`
-   - `git rm <files>` (cwd = tmpdir)
-   - `git commit -m "gitx: removed files picked into \`<currentBranch>\`"` (cwd = tmpdir)
-   - On success: `git worktree remove <tmpdir>`
-   - On failure: warn user about the leftover worktree at `<tmpdir>`
 
 ## Requirements Engineering
 

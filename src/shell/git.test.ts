@@ -77,40 +77,4 @@ describe('git shell wrappers', () => {
       status: 'A',
     })
   })
-
-  describe('worktree operations', () => {
-    it('adds and removes a worktree', async () => {
-      await rig.createCommit('file.txt', 'content')
-      await rig.createBranch('wt-branch')
-
-      const wtDir = await mkdtemp(join(tmpdir(), 'gitx-wt-test-'))
-      await rm(wtDir, { recursive: true, force: true })
-
-      await git.addWorktree(wtDir, 'wt-branch', rig.dir)
-
-      const branch = await git.getCurrentBranch(wtDir)
-      expect(branch).toBe('wt-branch')
-
-      await git.removeWorktree(wtDir, rig.dir)
-    })
-
-    it('removes files and commits in a worktree', async () => {
-      await rig.createCommit('a.txt', 'content-a')
-      await rig.createCommit('b.txt', 'content-b')
-      await rig.createBranch('del-branch')
-
-      const wtDir = await mkdtemp(join(tmpdir(), 'gitx-wt-test-'))
-      await rm(wtDir, { recursive: true, force: true })
-
-      await git.addWorktree(wtDir, 'del-branch', rig.dir)
-      await git.removeFiles(['a.txt'], wtDir)
-      await git.commit('Remove a.txt', wtDir)
-
-      // Verify the file is gone on del-branch
-      await git.removeWorktree(wtDir, rig.dir)
-      await rig.checkout('del-branch')
-      expect(await rig.fileExists('a.txt')).toBe(false)
-      expect(await rig.fileExists('b.txt')).toBe(true)
-    })
-  })
 })

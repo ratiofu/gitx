@@ -47,16 +47,6 @@ Feature: File Pick
     When I run "gitx file-pick --source identical"
     Then the command exits with error "No differences found"
 
-  Scenario: Delete files from source after copy
-    Given I am on branch "main"
-    And I have a branch "feature-a" with committed "wip.txt"
-    When I run "gitx file-pick --source feature-a"
-    And I select "wip.txt" to copy
-    And I select "wip.txt" to delete from source
-    And I confirm the plan
-    Then the file "wip.txt" exists in the worktree as unstaged
-    And a commit exists in "feature-a" that removes "wip.txt"
-
   Scenario: File Selection UI (Tree View)
     Given I am on branch "main"
     And I have a branch "feature-b" with files:

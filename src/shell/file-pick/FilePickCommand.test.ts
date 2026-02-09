@@ -44,7 +44,6 @@ describe('file-pick command', () => {
       'feature-source',
     )
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
-    vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
     vi.mocked(prompts.confirmExecution).mockResolvedValueOnce(true)
 
     await runCommand()
@@ -61,7 +60,6 @@ describe('file-pick command', () => {
 
     const file: GitFile = { path: 'feature-file.txt', status: 'A' }
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
-    vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
     vi.mocked(prompts.confirmExecution).mockResolvedValueOnce(true)
 
     await runCommand({ sourceBranch: 'feature-source' })
@@ -153,7 +151,6 @@ describe('file-pick command', () => {
       'feature-source',
     )
     vi.mocked(prompts.promptFilesToCopy).mockResolvedValueOnce([file])
-    vi.mocked(prompts.promptFilesToRemove).mockResolvedValueOnce([])
     vi.mocked(prompts.confirmExecution).mockResolvedValueOnce(false)
 
     await runCommand()

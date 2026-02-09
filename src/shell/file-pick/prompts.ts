@@ -1,6 +1,6 @@
 import pc from 'picocolors'
 
-const { dim, green, red } = pc
+const { dim, green } = pc
 
 import type { Branch, FilePickPlan, GitFile } from '../../core/models.js'
 import { confirmAction, multiSelect, selectOption, showNote } from '../tui.js'
@@ -18,19 +18,6 @@ export async function promptFilesToCopy(
   return files.filter((f) => selectedPaths.includes(f.path))
 }
 
-export async function promptFilesToRemove(
-  filesToCopy: readonly GitFile[],
-): Promise<readonly GitFile[]> {
-  const selectedPaths = await multiSelect(
-    'Select files to DELETE from the source branch:',
-    filesToCopy.map((f) => ({
-      value: f.path,
-      label: `${f.status}  ${f.path}`,
-    })),
-  )
-  return filesToCopy.filter((f) => selectedPaths.includes(f.path))
-}
-
 export async function promptSourceBranch(
   branches: readonly Branch[],
 ): Promise<string> {
@@ -44,9 +31,9 @@ export function showPlan(plan: FilePickPlan) {
   let summary = 'Plan:\n'
   summary += `  • Source: ${dim(plan.sourceBranch)}\n`
   summary += `  • Dest:   ${green(plan.currentBranch)} (current)\n\n`
-  summary += `  • Copying ${plan.filesToCopy.length} file(s) as unstaged\n`
-  if (plan.filesToDelete.length > 0) {
-    summary += `  • Deleting ${plan.filesToDelete.length} file(s) from ${red(plan.sourceBranch)}\n`
+  summary += `  • Copying ${plan.filesToCopy.length} file(s) as unstaged:\n`
+  for (const file of plan.filesToCopy) {
+    summary += `    - ${file.path}\n`
   }
   showNote(summary, 'Review')
 }

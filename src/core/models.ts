@@ -24,5 +24,4 @@ export interface FilePickPlan {
   readonly sourceBranch: string
   readonly currentBranch: string
   readonly filesToCopy: readonly GitFile[]
-  readonly filesToDelete: readonly GitFile[]
 }

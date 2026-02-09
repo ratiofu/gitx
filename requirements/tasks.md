@@ -25,5 +25,6 @@
 23. [x] Simplify to single execution mode (copy from other branch to current) <!-- id: 32 -->
 24. [x] State machine redesign (functional core) <!-- id: 33 -->
 25. [x] Implement file deletion via git worktree <!-- id: 34 -->
-26. [ ] Automated tests (Vitest + Gherkin) <!-- id: 15 -->
-27. [ ] Manual testing <!-- id: 9 -->
+26. [x] Remove support for file deletion <!-- id: 35 -->
+27. [ ] Automated tests (Vitest + Gherkin) <!-- id: 15 -->
+28. [ ] Manual testing <!-- id: 9 -->

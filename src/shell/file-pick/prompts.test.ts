@@ -4,7 +4,6 @@ import * as tui from '../tui.js'
 import {
   confirmExecution,
   promptFilesToCopy,
-  promptFilesToRemove,
   promptSourceBranch,
   showPlan,
 } from './prompts.js'
@@ -30,25 +29,6 @@ describe('prompts', () => {
       expect(result[0].path).toBe('file1.txt')
       expect(tui.multiSelect).toHaveBeenCalledWith(
         expect.stringContaining('Select files to COPY'),
-        expect.any(Array),
-      )
-    })
-  })
-
-  describe('promptFilesToRemove', () => {
-    it('returns filtered list of files to remove', async () => {
-      const files: GitFile[] = [
-        { path: 'file1.txt', status: 'M' },
-        { path: 'file2.txt', status: 'A' },
-      ]
-      vi.mocked(tui.multiSelect).mockResolvedValueOnce(['file2.txt'])
-
-      const result = await promptFilesToRemove(files)
-
-      expect(result).toHaveLength(1)
-      expect(result[0].path).toBe('file2.txt')
-      expect(tui.multiSelect).toHaveBeenCalledWith(
-        expect.stringContaining('Select files to DELETE'),
         expect.any(Array),
       )
     })
@@ -81,7 +61,6 @@ describe('prompts', () => {
           { path: 'a.txt', status: 'M' },
           { path: 'b.txt', status: 'A' },
         ],
-        filesToDelete: [],
       }
       showPlan(plan)
 
@@ -89,22 +68,12 @@ describe('prompts', () => {
         expect.stringContaining('Copying 2 file(s)'),
         'Review',
       )
-    })
-
-    it('displays summary with delete operations', () => {
-      const plan: FilePickPlan = {
-        sourceBranch: 'feature-a',
-        currentBranch: 'main',
-        filesToCopy: [
-          { path: 'a.txt', status: 'M' },
-          { path: 'b.txt', status: 'A' },
-        ],
-        filesToDelete: [{ path: 'a.txt', status: 'M' }],
-      }
-      showPlan(plan)
-
       expect(tui.showNote).toHaveBeenCalledWith(
-        expect.stringContaining('Deleting 1 file(s)'),
+        expect.stringContaining('a.txt'),
+        'Review',
+      )
+      expect(tui.showNote).toHaveBeenCalledWith(
+        expect.stringContaining('b.txt'),
         'Review',
       )
     })

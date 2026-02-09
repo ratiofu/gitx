@@ -42,7 +42,6 @@ gitx --version
 ### `file-pick`
 
 Interactively select files from another branch and copy them into the current branch as unstaged changes.
-Optionally, remove the selected files from the source branch.
 Unlike `git cherry-pick`, this command works on files, not commits.
 This is all done via a TUI (Terminal User Interface), with interactive file selection.
 It works only for local branches!
@@ -53,9 +52,7 @@ It works only for local branches!
 3. The current branch is the destination. Files are copied as unstaged changes.
 4. The user is prompted to select files to copy from the source branch.
    Type-ahead is used to filter all files. Space toggles selection. Enter confirms selection.
-5. The user is prompted to select which of the copied files to remove from the source branch.
-   Space toggles selection. Enter confirms selection.
-6. A final confirmation screen lists the operations and asks for `[Y/n]` confirmation.
+5. A final confirmation screen lists the operations and asks for `[Y/n]` confirmation.
 
 #### Examples
 

@@ -15,13 +15,6 @@ export interface NeedsFileSelectionState {
   readonly candidates: readonly GitFile[]
 }
 
-export interface NeedsDeleteSelectionState {
-  readonly phase: 'needs-delete-selection'
-  readonly currentBranch: string
-  readonly sourceBranch: string
-  readonly filesToCopy: readonly GitFile[]
-}
-
 export interface PlanReadyState {
   readonly phase: 'plan-ready'
   readonly plan: FilePickPlan
@@ -35,7 +28,6 @@ export interface AbortedState {
 export type FilePickState =
   | NeedsSourceState
   | NeedsFileSelectionState
-  | NeedsDeleteSelectionState
   | PlanReadyState
   | AbortedState
 
@@ -104,29 +96,16 @@ export function selectSource(
 export function selectFiles(
   state: NeedsFileSelectionState,
   filesToCopy: readonly GitFile[],
-): NeedsDeleteSelectionState | AbortedState {
+): PlanReadyState | AbortedState {
   if (filesToCopy.length === 0) {
     return { phase: 'aborted', reason: 'No files selected.' }
   }
-  return {
-    phase: 'needs-delete-selection',
-    currentBranch: state.currentBranch,
-    sourceBranch: state.sourceBranch,
-    filesToCopy,
-  }
-}
-
-export function selectDeletes(
-  state: NeedsDeleteSelectionState,
-  filesToDelete: readonly GitFile[],
-): PlanReadyState {
   return {
     phase: 'plan-ready',
     plan: {
       sourceBranch: state.sourceBranch,
       currentBranch: state.currentBranch,
-      filesToCopy: state.filesToCopy,
-      filesToDelete,
+      filesToCopy,
     },
   }
 }

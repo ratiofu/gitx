@@ -4,11 +4,9 @@ import {
   type AbortedState,
   type FilePickState,
   initState,
-  type NeedsDeleteSelectionState,
   type NeedsFileSelectionState,
   type NeedsSourceState,
   type PlanReadyState,
-  selectDeletes,
   selectFiles,
   selectSource,
   validateSource,
@@ -24,7 +22,6 @@ import { executeFilePick } from './execute.js'
 import {
   confirmExecution,
   promptFilesToCopy,
-  promptFilesToRemove,
   promptSourceBranch,
   showPlan,
 } from './prompts.js'
@@ -53,13 +50,11 @@ export class FilePickCommand {
     const filesSelected = await pickFiles(sourceSelected)
     if (failed(filesSelected)) return abort(filesSelected)
 
-    const planned = await pickDeletes(filesSelected)
-
-    showPlan(planned.plan)
+    showPlan(filesSelected.plan)
     if (!(await confirmExecution())) return showOutro('Operation cancelled.')
 
     this.#spin('Executing operations...')
-    const result = await executeFilePick(planned.plan)
+    const result = await executeFilePick(filesSelected.plan)
     this.#stop('Done!')
     showOutro(result)
   }
@@ -105,16 +100,9 @@ export class FilePickCommand {
 
 async function pickFiles(
   state: NeedsFileSelectionState,
-): Promise<NeedsDeleteSelectionState | AbortedState> {
+): Promise<PlanReadyState | AbortedState> {
   const filesToCopy = await promptFilesToCopy(state.candidates)
   return selectFiles(state, filesToCopy)
-}
-
-async function pickDeletes(
-  state: NeedsDeleteSelectionState,
-): Promise<PlanReadyState> {
-  const filesToDelete = await promptFilesToRemove(state.filesToCopy)
-  return selectDeletes(state, filesToDelete)
 }
 
 function failed(state: FilePickState): state is AbortedState {

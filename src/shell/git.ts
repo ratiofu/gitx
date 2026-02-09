@@ -62,31 +62,3 @@ export async function getDiffBetweenBranches(
   )
   return parseDiffNameStatus(output)
 }
-
-// --- Worktree operations ---
-
-export async function addWorktree(
-  path: string,
-  branch: string,
-  cwd?: string,
-): Promise<void> {
-  await git(['worktree', 'add', path, branch], { cwd })
-}
-
-export async function removeWorktree(
-  path: string,
-  cwd?: string,
-): Promise<void> {
-  await git(['worktree', 'remove', path], { cwd })
-}
-
-export async function removeFiles(
-  paths: readonly string[],
-  cwd: string,
-): Promise<void> {
-  await git(['rm', ...paths], { cwd })
-}
-
-export async function commit(message: string, cwd: string): Promise<void> {
-  await git(['commit', '-m', message], { cwd })
-}

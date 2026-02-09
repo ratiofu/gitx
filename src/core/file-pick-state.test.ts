@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   initState,
-  selectDeletes,
   selectFiles,
   selectSource,
   validateSource,
@@ -136,41 +135,12 @@ describe('file-pick-state', () => {
       }
     })
 
-    it('transitions to needs-delete-selection', () => {
+    it('transitions to plan-ready', () => {
       const selected = [file('a.txt')]
       const state = selectFiles(needsFiles, selected)
-      expect(state.phase).toBe('needs-delete-selection')
-      if (state.phase === 'needs-delete-selection') {
-        expect(state.filesToCopy).toEqual(selected)
-      }
-    })
-  })
-
-  describe('selectDeletes', () => {
-    const needsDeletes = {
-      phase: 'needs-delete-selection' as const,
-      currentBranch: 'main',
-      sourceBranch: 'feature-a',
-      filesToCopy: [file('a.txt'), file('b.txt')],
-    }
-
-    it('transitions to plan-ready with no deletes', () => {
-      const state = selectDeletes(needsDeletes, [])
       expect(state.phase).toBe('plan-ready')
       if (state.phase === 'plan-ready') {
-        expect(state.plan.filesToDelete).toHaveLength(0)
-        expect(state.plan.filesToCopy).toEqual(needsDeletes.filesToCopy)
-      }
-    })
-
-    it('transitions to plan-ready with deletes', () => {
-      const deletes = [file('a.txt')]
-      const state = selectDeletes(needsDeletes, deletes)
-      expect(state.phase).toBe('plan-ready')
-      if (state.phase === 'plan-ready') {
-        expect(state.plan.filesToDelete).toEqual(deletes)
-        expect(state.plan.sourceBranch).toBe('feature-a')
-        expect(state.plan.currentBranch).toBe('main')
+        expect(state.plan.filesToCopy).toEqual(selected)
       }
     })
   })
