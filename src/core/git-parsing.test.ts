@@ -31,13 +31,19 @@ describe('git-parsing', () => {
   describe('parseBranchList', () => {
     it('parses custom format', () => {
       const output =
-        'main||sha1|2023-01-01T00:00:00Z\nfeature|*|sha2|2023-01-02T00:00:00Z'
+        'main||2023-01-01T00:00:00Z\nfeature|*|2023-01-02T00:00:00Z'
       const result = parseBranchList(output)
       expect(result).toHaveLength(2)
       expect(result[0].name).toBe('main')
       expect(result[0].isCurrent).toBe(false)
+      expect(result[0].lastCommitDate).toEqual(
+        new Date('2023-01-01T00:00:00Z'),
+      )
       expect(result[1].name).toBe('feature')
       expect(result[1].isCurrent).toBe(true)
+      expect(result[1].lastCommitDate).toEqual(
+        new Date('2023-01-02T00:00:00Z'),
+      )
     })
 
     it('returns empty array for empty input', () => {
