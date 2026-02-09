@@ -12,3 +12,6 @@ pins:
   "changesets/action@v1":
     commit: "c48e67d110a68bc90ccf1098e9646092baacaa87"
     version: "v1"
+  "actions/github-script@v7":
+    commit: "f28e40c7f34bde8b3046d885e986cb6290c5673b"
+    version: "v7.1.0"

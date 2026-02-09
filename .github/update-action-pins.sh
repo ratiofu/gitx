@@ -7,6 +7,7 @@ actions=(
   "pnpm/action-setup@v2"
   "actions/setup-node@v4"
   "changesets/action@v1"
+  "actions/github-script@v7"
 )
 
 output_file=".github/action-pinned-commits.yaml"
