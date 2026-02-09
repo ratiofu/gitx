@@ -6,7 +6,13 @@
   "bin": {
     "gitx": "./dist/index.js"
   },
+  "packageManager": "pnpm@10.28.1",
+  "engines": {
+    "npm": "please-use-pnpm",
+    "yarn": "please-use-pnpm"
+  },
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "tsx src/index.ts",
     "build": "tsup src/index.ts --format esm --clean --dts",
     "test": "vitest run --passWithNoTests",
