@@ -24,19 +24,8 @@ jobs:
           fetch-depth: 0
           filter: blob:none
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b # v2.4.1
-        with:
-          version: 10.28.1
-
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22.x
-          cache: 'pnpm'
-
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Project Setup
+        uses: ./.github/actions/setup
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
