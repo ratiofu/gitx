@@ -13,7 +13,12 @@ report_runtime() {
 }
 
 # Define checks
-checks=("lint:fix" "typecheck" "test" "reqcheck")
+checks=("$@")
+
+if [ ${#checks[@]} -eq 0 ]; then
+  echo "❌ No checks provided"
+  exit 1
+fi
 
 # Track background PIDs and their check names
 declare -A pid_to_check

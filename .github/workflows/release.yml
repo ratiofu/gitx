@@ -27,8 +27,11 @@ jobs:
       - name: Project Setup
         uses: ./.github/actions/setup
 
+      - name: Run Tests
+        run: pnpm test
+
       - name: Build
-        run: pnpm build
+        run: pnpm build-ci
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets

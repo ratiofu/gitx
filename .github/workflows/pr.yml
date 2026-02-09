@@ -27,12 +27,12 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build and Quality Check
-        run: pnpm build
+        run: pnpm build-ci
 
       - name: Run Tests with Coverage on Changed Files
         run: |
           git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
-          pnpm vitest run --coverage --changed ${{ github.base_ref }}
+          pnpm vitest run --passWithNoTests --coverage --changed ${{ github.base_ref }}
 
       - name: Verify Changeset
         id: changeset

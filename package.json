@@ -20,8 +20,9 @@
     "lint:fix": "biome check --fix .",
     "reqcheck": "gherkin-lint requirements/",
     "typecheck": "tsc --noEmit",
-    "quality": "./scripts/quality.sh",
-    "release": "changeset publish"
+    "quality": "./scripts/quality-dev.sh",
+    "release": "changeset publish",
+    "build-ci": "./scripts/quality-build.sh && tsup src/index.ts --format esm --clean --dts"
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
