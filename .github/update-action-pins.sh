@@ -18,14 +18,13 @@ for action in "${actions[@]}"; do
   repo="${action%@*}"
   tag="${action#*@}"
   
-  echo "Fetching latest commit for $repo @ $tag..."
+  echo "Processing $repo @ $tag..."
   
-  # Fetch the commit hash using git ls-remote
-  # Handles both tags (refs/tags/v1) and branches if applicable, but usually tags for actions
+  # Fetch the commit hash for the requested tag (e.g., v4)
   commit_hash=$(git ls-remote "https://github.com/$repo.git" "refs/tags/$tag" | awk '{print $1}' | head -n 1)
   
-  # Fallback: try fetching the tag directly if refs/tags/ prefix fails (some actions strictly use semantic versioning without v prefix or other quirks)
   if [ -z "$commit_hash" ]; then
+      # Fallback for non-v prefix or branch names
       commit_hash=$(git ls-remote "https://github.com/$repo.git" "$tag" | awk '{print $1}' | head -n 1)
   fi
 
@@ -34,7 +33,21 @@ for action in "${actions[@]}"; do
     exit 1
   fi
   
-  echo "  \"$action\": \"$commit_hash\"" >> "$output_file"
+  # Resolve the specific version tag for this commit
+  # 1. List all tags pointing to this commit
+  # 2. Filter for tags starting with v (or simple numbers)
+  # 3. Sort by version (sort -V) and take the last one to get the latest/most specific
+  resolved_version=$(git ls-remote --tags "https://github.com/$repo.git" | grep "$commit_hash" | awk '{print $2}' | sed 's|refs/tags/||' | grep -v '\^{}' | sort -V | tail -n 1)
+  
+  if [ -z "$resolved_version" ]; then
+      resolved_version="$tag" # Fallback to input tag if no specific tag found
+  fi
+
+  echo "  --> Resolved to $commit_hash ($resolved_version)"
+
+  echo "  \"$action\":" >> "$output_file"
+  echo "    commit: \"$commit_hash\"" >> "$output_file"
+  echo "    version: \"$resolved_version\"" >> "$output_file"
 done
 
 echo "Updated $output_file"
