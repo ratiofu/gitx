@@ -28,7 +28,7 @@
         "recommended": true,
         "noDefaultExport": "error",
         "noImplicitBoolean": "off",
-        "useBlockStatements": "error",
+        "useBlockStatements": "off",
         "useConst": "error"
       },
       "suspicious": {

@@ -1,6 +1,7 @@
+#!/usr/bin/env node
 import { defineCommand, runMain } from 'citty'
 import pkg from '../package.json' with { type: 'json' }
-import { splitBranchCommand } from './shell/split-branch/index.js'
+import { filePickCommand, fpCommandAlias } from './shell/file-pick/index.js'
 
 const main = defineCommand({
   meta: {
@@ -9,7 +10,8 @@ const main = defineCommand({
     description: 'Extended Git Operations CLI',
   },
   subCommands: {
-    'split-branch': splitBranchCommand,
+    'file-pick': filePickCommand,
+    fp: fpCommandAlias,
   },
 })
 

@@ -1,6 +1,6 @@
 # Implementation Plan - gitx
 
-Build a Node.js-based CLI tool `gitx` that provides extended Git operations, starting with `split-branch`.
+Build a Node.js-based CLI tool `gitx` that provides extended Git operations, starting with `file-pick`.
 
 ## User Review Required
 
@@ -9,66 +9,90 @@ Build a Node.js-based CLI tool `gitx` that provides extended Git operations, sta
 
 ## Architecture: Functional Core, Imperative Shell
 
-The app will be structured to separate side effects (Git, FS, User Input) from logic.
+The app separates side effects (Git, FS, User Input) from pure logic.
 
 ### Directory Structure
 
 ```text
 src/
-├── core/              # PURE functions only. No side effects.
-│   ├── models.ts      # Types (File, Branch, Selection)
-│   ├── logic.ts       # Filtering, State transitions
-│   └── logic.test.ts  # Vitest unit tests
-├── shell/             # IMPERATIVE. Git, TUI, Process.
-│   ├── git.ts         # Git executable wrappers
-│   ├── tui.ts         # wrapper around @clack/prompts
-│   └── commands/      # Citty command definitions
-│       └── split-branch/
-│           ├── index.ts
-│           └── index.test.ts # Integration tests (Vitest + GitTestRig)
-├── requirements/      # Gherkin .feature files (Specs only)
-├── index.ts           # Entry point
+├── core/                  # PURE functions only. No side effects.
+│   ├── models.ts          # Types (GitFile, Branch, FilePickPlan)
+│   ├── file-pick-state.ts # State machine: discriminated union + pure transitions
+│   ├── git-parsing.ts     # Git output parsers
+│   └── *.test.ts
+├── shell/                 # IMPERATIVE. Git, TUI, Process.
+│   ├── git.ts             # Git executable wrappers (incl. worktree ops)
+│   ├── tui.ts             # Wrapper around @clack/prompts
+│   └── file-pick/         # File-pick command
+│       ├── FilePickCommand.ts   # State-machine orchestrator
+│       ├── execute.ts           # Plan execution (copy + worktree deletion)
+│       ├── prompts.ts           # TUI prompts for file-pick
+│       ├── index.ts             # CLI command definition (citty)
+│       └── *.test.ts
+├── test/                  # Test utilities
+│   └── git-test-rig.ts    # Temp git repo fixture for tests
+├── requirements/          # Gherkin .feature files (Specs only)
+├── index.ts               # Entry point
 └── ...
 ```
 
+## State Machine
+
+The `file-pick` command is modeled as a state machine. Each phase produces a well-defined state. The shell layer orchestrates by feeding signals (user inputs, git query results) into pure transition functions.
+
+```mermaid
+stateDiagram-v2
+    [*] --> NeedsSource: init context
+    NeedsSource --> NeedsFilesToCopy: source selected
+    NeedsSource --> Aborted: no branches / invalid source
+    NeedsFilesToCopy --> PlanReady: files selected
+    PlanReady --> Done: confirmed and executed
+    PlanReady --> Aborted: user cancelled
+    Aborted --> [*]
+    Done --> [*]
+```
+
+### State Type
+
+```typescript
+type FilePickState =
+  | { phase: 'needs-source'; currentBranch: string; branches: Branch[] }
+  | { phase: 'needs-file-selection'; sourceBranch: string; currentBranch: string; candidates: GitFile[] }
+  | { phase: 'plan-ready'; plan: FilePickPlan }
+  | { phase: 'aborted'; reason: string }
+```
+
+### Pure Transitions
+
+- `initState(currentBranch, branches)` -> `NeedsSource | Aborted`
+- `validateSource(state, sourceBranch)` -> `Aborted | undefined`
+- `selectSource(state, sourceBranch, candidates)` -> `NeedsFileSelection | Aborted`
+- `selectFiles(state, filesToCopy)` -> `PlanReady | Aborted`
+
+### Plan
+
+Once all user input is collected, a `FilePickPlan` describes the operations:
+
+```typescript
+interface FilePickPlan {
+  sourceBranch: string
+  currentBranch: string
+  filesToCopy: GitFile[]    // copy from source to current, unstaged
+}
+```
+
+### Execution
+
+1. **Copy**: For each file, `git checkout <source> -- <file>` then `git restore --staged <file>` (leaves file unstaged).
+
 ## Requirements Engineering
 
-Behavior requirements in `requirements/split-branch.feature`.
-
-## Detailed Implementation Tasks
-
-### Phase 1: Foundation
-
-1.a **Project Initialization**: ✅ Complete
-1.b **Test Infrastructure**:
-    - Setup Vitest.
-    - Create a "Git Test Rig" helper in `src/test/git-test-rig.ts` that allows creating temp repos, making commits, and switching branches programmatically for tests.
-
-### Phase 2: Core Logic (Pure)
-
-2.a **Core Models**: Define types in `src/core/models.ts` (`GitFile`, `Branch`, `SplitOperation`).
-2.b **Diff Logic**: Implement `parseDiff(rawOutput: string): GitFile[]` in `src/core/git-parsing.ts`.
-2.c **Selection Logic**: Implement `computeOperations(selection, options): Command[]` in `src/core/logic.ts` that takes a user selection and returns a list of abstract Git commands to run.
-
-### Phase 3: Shell & Command (Imperative)
-
-3.a **Git Wrappers**: Implement `src/shell/git.ts` using `execa` to run arbitrary git commands.
-3.b **TUI Wrappers**: Implement `src/shell/tui.ts` using `@clack/prompts` to ask for branch names and file selections.
-3.c **Command wiring**: Implement `src/shell/commands/split-branch/index.ts`.
-    - **CLI Arguments**: Parse `--source` (`-s`) and `--destination` (`-d`) flags.
-    - **Context Loading**:
-        - Default `source` = current branch (if splitting worktree).
-        - Support `source` != current branch (splitting committed files from another branch).
-        - If `source` is another branch, use `git diff --name-status destination...source` to find candidates.
-    - **Wire up Core Logic**: Connect TUI, Arguments, and Core Logic.
-
-### Phase 4: Verification
-
-4.a **Integration Tests**: Write `src/shell/commands/split-branch/index.test.ts` that implements the scenarios from `requirements/split-branch.feature` as standard Vitest tests using `GitTestRig`.
+Behavior requirements in `requirements/file-pick.feature`.
 
 ## Verification Plan
 
 ### Automated Tests
 
-- **Unit**: Verify `parseDiff` and `computeOperations` with standard Vitest unit tests.
-- **Integration**: Verify the full CLI flow using the Gherkin feature files.
+- **Unit**: Pure state transitions in `file-pick-state.test.ts`, parsers in `git-parsing.test.ts`.
+- **Integration**: Git wrappers in `git.test.ts`, execution in `execute.test.ts`, command flow in `FilePickCommand.test.ts`.
+- **Quality**: `pnpm quality` runs lint, typecheck, tests, and Gherkin lint in parallel.

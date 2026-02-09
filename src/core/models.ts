@@ -17,26 +17,11 @@ export interface GitFile {
 export interface Branch {
   readonly name: string
   readonly isCurrent: boolean
-  readonly sha?: string
   readonly lastCommitDate?: Date
 }
 
-export type OperationType = 'copy' | 'remove-source'
-
-export interface SplitOperation {
-  readonly type: OperationType
-  readonly file: GitFile
-  readonly destinationBranch: string
+export interface FilePickPlan {
   readonly sourceBranch: string
-}
-
-export interface SplitOptions {
-  readonly newBranch: string
-  readonly sourceBranch: string
-}
-
-export interface SplitContext {
-  readonly sourceBranch: string
-  readonly destinationBranch: string
-  readonly currentBranchIsSource: boolean
+  readonly currentBranch: string
+  readonly filesToCopy: readonly GitFile[]
 }

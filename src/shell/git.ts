@@ -35,11 +35,6 @@ export async function checkGitInstallation(cwd?: string) {
   }
 }
 
-export async function getDiffNameStatus(cwd?: string) {
-  const output = await git(GIT_DIFF_NAME_STATUS_ARGS, { cwd })
-  return parseDiffNameStatus(output)
-}
-
 export async function getBranchList(cwd?: string) {
   const output = await git(GIT_BRANCH_LIST_ARGS, { cwd })
   return parseBranchList(output)
@@ -56,18 +51,14 @@ export async function checkout(
   await git(['checkout', branchName], { cwd })
 }
 
-export async function createBranch(
-  branchName: string,
-  startPoint?: string,
+export async function getDiffBetweenBranches(
+  baseBranch: string,
+  sourceBranch: string,
   cwd?: string,
-): Promise<void> {
-  const args = ['checkout', '-b', branchName]
-  if (startPoint) {
-    args.push(startPoint)
-  }
-  await git(args, { cwd })
-}
-
-export async function getHeadSha(cwd?: string) {
-  return git(['rev-parse', 'HEAD'], { cwd })
+) {
+  const output = await git(
+    [...GIT_DIFF_NAME_STATUS_ARGS, `${baseBranch}...${sourceBranch}`],
+    { cwd },
+  )
+  return parseDiffNameStatus(output)
 }
