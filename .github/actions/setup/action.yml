@@ -9,6 +9,9 @@ inputs:
     description: 'pnpm version'
     required: false
     default: '10.28.1'
+  registry-url:
+    description: 'Registry URL for publishing'
+    required: false
 
 runs:
   using: "composite"
@@ -22,6 +25,7 @@ runs:
       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: ${{ inputs.node-version }}
+        registry-url: ${{ inputs.registry-url }}
         cache: 'pnpm'
 
     - name: Install Dependencies

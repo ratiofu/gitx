@@ -23,6 +23,8 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
 
       - uses: ./.github/actions/setup
+        with:
+          registry-url: 'https://registry.npmjs.org'
         if: ${{ steps.release.outputs.release_created }}
 
       - run: pnpm build-ci
