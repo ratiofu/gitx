@@ -6,8 +6,8 @@ actions=(
   "actions/checkout@v4"
   "pnpm/action-setup@v2"
   "actions/setup-node@v4"
-  "changesets/action@v1"
   "actions/github-script@v7"
+  "googleapis/release-please-action@v4"
 )
 
 output_file=".github/action-pinned-commits.yaml"

@@ -16,14 +16,17 @@
     "build-ci": "./scripts/quality-build.sh && pnpm build-package",
     "build-package": "tsup src/index.ts --format esm --clean --dts",
     "dev": "tsx src/index.ts",
-    "lint:fix": "biome check --fix .",
     "lint": "biome check .",
+    "lint:fix": "biome check --fix .",
     "preinstall": "npx only-allow pnpm",
+    "prepare": "simple-git-hooks",
     "quality": "./scripts/quality-dev.sh",
-    "release": "changeset publish",
     "reqcheck": "gherkin-lint requirements/",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
+  },
+  "simple-git-hooks": {
+    "commit-msg": "npx commitlint --edit ${1}"
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
@@ -33,11 +36,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@changesets/changelog-github": "catalog:",
-    "@changesets/cli": "catalog:",
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "gherkin-lint": "catalog:",
+    "simple-git-hooks": "catalog:",
     "tsup": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
