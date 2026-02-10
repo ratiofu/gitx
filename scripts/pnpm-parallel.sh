@@ -12,24 +12,24 @@ report_runtime() {
   echo "⏱️  took ${elapsed_s}.${elapsed_ms}s"
 }
 
-# Define checks
-checks=("$@")
+# Define tasks
+tasks=("$@")
 
-if [ ${#checks[@]} -eq 0 ]; then
-  echo "❌ No checks provided"
+if [ ${#tasks[@]} -eq 0 ]; then
+  echo "❌ No tasks provided"
   exit 1
 fi
 
-# Track background PIDs and their check names
-declare -A pid_to_check
+# Track background PIDs and their task names
+declare -A pid_to_task
 pids=()
 
-for check in "${checks[@]}"; do
-  echo "🚀 starting: $check"
-  pnpm "$check" &
+for task in "${tasks[@]}"; do
+  echo "🚀 starting: $task"
+  pnpm "$task" &
   pid=$!
   pids+=($pid)
-  pid_to_check[$pid]=$check
+  pid_to_task[$pid]=$task
 done
 
 # Function to kill remaining background jobs
@@ -42,24 +42,26 @@ cleanup() {
 trap cleanup EXIT
 
 exit_code=0
-failed_check=""
+failed_task=""
 
 # Wait for jobs one by one
-while [ ${#pid_to_check[@]} -gt 0 ]; do
+while [ ${#pid_to_task[@]} -gt 0 ]; do
   if ! wait -n -p finished_pid; then
     status=$?
-    failed_check=${pid_to_check[$finished_pid]}
-    echo "❌ check '$failed_check' failed (status $status)"
+    failed_task=${pid_to_task[$finished_pid]}
+    echo "❌ task '$failed_task' failed (status $status)"
     exit_code=$status
     break
   else
-    echo "✅ check '${pid_to_check[$finished_pid]}' passed"
+    echo "✅ task '${pid_to_task[$finished_pid]}' passed"
   fi
-  unset "pid_to_check[$finished_pid]"
+  unset "pid_to_task[$finished_pid]"
 done
 
 if [ $exit_code -eq 0 ]; then
-  echo "✅ all checks passed"
+  tasks_str=$(printf ", %s" "${tasks[@]}")
+  tasks_str="${tasks_str:2}"
+  echo "✅ all tasks passed: $tasks_str"
 fi
 
 exit $exit_code
