@@ -22,7 +22,13 @@ for action in "${actions[@]}"; do
   echo "Processing $repo @ $tag..."
   
   # Fetch the commit hash for the requested tag (e.g., v4)
-  commit_hash=$(git ls-remote "https://github.com/$repo.git" "refs/tags/$tag" | awk '{print $1}' | head -n 1)
+  # For annotated tags, we want the peeled commit hash (ending in ^{}), not the tag object hash.
+  refs=$(git ls-remote "https://github.com/$repo.git" "refs/tags/$tag")
+  commit_hash=$(echo "$refs" | grep '\^{}$' | awk '{print $1}')
+  
+  if [ -z "$commit_hash" ]; then
+    commit_hash=$(echo "$refs" | awk '{print $1}' | head -n 1)
+  fi
   
   if [ -z "$commit_hash" ]; then
       # Fallback for non-v prefix or branch names
