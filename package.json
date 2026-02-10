@@ -1,5 +1,5 @@
 {
-  "name": "gitx",
+  "name": "@ratiofu/gitx",
   "version": "1.0.0",
   "description": "Extended Git Operations CLI",
   "type": "module",
@@ -11,16 +11,25 @@
     "npm": "please-use-pnpm",
     "yarn": "please-use-pnpm"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
+    "build": "pnpm quality && pnpm build-package",
+    "build-ci": "./scripts/pnpm-parallel.sh 'typecheck' 'lint' 'reqcheck' 'build-package'",
+    "build-package": "tsup src/index.ts --format esm --clean --dts",
     "dev": "tsx src/index.ts",
-    "build": "tsup src/index.ts --format esm --clean --dts",
-    "test": "vitest run --passWithNoTests",
     "lint": "biome check .",
     "lint:fix": "biome check --fix .",
+    "preinstall": "npx only-allow pnpm",
+    "prepare": "simple-git-hooks",
+    "quality": "./scripts/pnpm-parallel.sh 'typecheck' 'lint:fix' 'reqcheck' 'test'",
     "reqcheck": "gherkin-lint requirements/",
-    "typecheck": "tsc --noEmit",
-    "quality": "./scripts/quality.sh"
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "simple-git-hooks": {
+    "commit-msg": "npx commitlint --edit ${1}"
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
@@ -30,9 +39,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "gherkin-lint": "catalog:",
+    "simple-git-hooks": "catalog:",
     "tsup": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
