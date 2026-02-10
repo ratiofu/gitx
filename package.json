@@ -1,5 +1,5 @@
 {
-  "name": "gitx",
+  "name": "@ratiofu/gitx",
   "version": "1.0.0",
   "description": "Extended Git Operations CLI",
   "type": "module",
@@ -13,14 +13,14 @@
   },
   "scripts": {
     "build": "pnpm quality && pnpm build-package",
-    "build-ci": "./scripts/quality-build.sh && pnpm build-package",
+    "build-ci": "./scripts/pnpm-parallel.sh 'typecheck' 'lint' 'reqcheck' 'build-package'",
     "build-package": "tsup src/index.ts --format esm --clean --dts",
     "dev": "tsx src/index.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --fix .",
     "preinstall": "npx only-allow pnpm",
     "prepare": "simple-git-hooks",
-    "quality": "./scripts/quality-dev.sh",
+    "quality": "./scripts/pnpm-parallel.sh 'typecheck' 'lint:fix' 'reqcheck' 'test'",
     "reqcheck": "gherkin-lint requirements/",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
