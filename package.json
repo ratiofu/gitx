@@ -11,6 +11,9 @@
     "npm": "please-use-pnpm",
     "yarn": "please-use-pnpm"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "pnpm quality && pnpm build-package",
     "build-ci": "./scripts/pnpm-parallel.sh 'typecheck' 'lint' 'reqcheck' 'build-package'",
