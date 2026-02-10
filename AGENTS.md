@@ -21,7 +21,7 @@ The codebase follows a **Functional Core, Imperative Shell** architecture.
 ### Security & CI
 
 - **Pinned Actions**: In GitHub Actions workflows, always pin actions to a specific commit SHA.
-  - **Source of Truth**: Maintain the list of actions in `.github/update-action-pins.sh`.
+  - **Source of Truth**: Maintain the list of actions in `.github/update-action-pins.sh`, then run it.
   - **Reference**: Use the commit hashes from `.github/action-pinned-commits.yaml` in your workflows.
   - **Reason**: This prevents supply chain attacks if a tag is overwritten.
 - **Tools**: Use `simple-git-hooks` for managing Git hooks to ensure consistent developer checks.
