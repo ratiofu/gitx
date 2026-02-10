@@ -15,3 +15,6 @@ pins:
   "googleapis/release-please-action@v4":
     commit: "c3fc4de07084f75a2b61a5b933069bda6edf3d5c"
     version: "v4"
+  "actions/create-github-app-token@v1":
+    commit: "d72941d797fd3113feb6b93fd0dec494b13a2547"
+    version: "v1.12.0"
