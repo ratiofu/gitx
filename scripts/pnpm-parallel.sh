@@ -46,8 +46,10 @@ failed_task=""
 
 # Wait for jobs one by one
 while [ ${#pid_to_task[@]} -gt 0 ]; do
-  if ! wait -n -p finished_pid; then
-    status=$?
+  wait -n -p finished_pid
+  status=$?
+  
+  if [ $status -ne 0 ]; then
     failed_task=${pid_to_task[$finished_pid]}
     echo "❌ task '$failed_task' failed (status $status)"
     exit_code=$status
