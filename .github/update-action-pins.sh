@@ -8,6 +8,7 @@ actions=(
   "actions/setup-node@v4"
   "actions/github-script@v7"
   "googleapis/release-please-action@v4"
+  "actions/create-github-app-token@v1"
 )
 
 output_file=".github/action-pinned-commits.yaml"
