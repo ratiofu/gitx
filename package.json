@@ -4,7 +4,7 @@
   "description": "Extended Git Operations CLI",
   "type": "module",
   "bin": {
-    "gitx": "./dist/index.js"
+    "gitx": "./bin/gitx.js"
   },
   "packageManager": "pnpm@10.28.1",
   "engines": {
@@ -19,6 +19,8 @@
     "build-ci": "./scripts/pnpm-parallel.sh 'typecheck' 'lint' 'reqcheck' 'build-package'",
     "build-package": "tsup src/index.ts --format esm --clean --dts",
     "dev": "tsx src/index.ts",
+    "dev-global": "pnpm link --global",
+    "dev-global-off": "pnpm unlink --global",
     "lint": "biome check .",
     "lint:fix": "biome check --fix .",
     "preinstall": "npx only-allow pnpm",
