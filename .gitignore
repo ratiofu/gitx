@@ -1,10 +1,11 @@
 !.env.example
 .cache
 .cache/
+.codex
 .docusaurus
+.DS_Store
 .env
 .env.*
-.DS_Store
 .lock-wscript
 .next
 .npm
